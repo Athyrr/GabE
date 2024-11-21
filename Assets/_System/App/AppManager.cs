@@ -1,7 +1,6 @@
 using UnityEngine;
 using VContainer;
 
-
 namespace GabE.Game
 {
 
@@ -32,7 +31,7 @@ namespace GabE.Game
         /// </summary>
         public static AppManager Instance;
 
-        private const string _mainMenuSceneName = "SC_MainMenu";
+        private const string _mainMenuSceneName = "SC_Menu";
         private const string _gameSceneName = "SC_Game";
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace GabE.Game
             _currentAppState = AppState.MainMenu;
 
             //Initial state
-            Play();
+            //Play();
         }
 
         #endregion
