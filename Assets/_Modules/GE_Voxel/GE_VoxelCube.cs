@@ -31,6 +31,7 @@ namespace _Modules.GE_Voxel
 
         public void Start()
         {
+            
             _meshFilter = _gameObject.GetComponent<MeshFilter>();
             if (_meshFilter == null)
                 _meshFilter = _gameObject.AddComponent<MeshFilter>();
@@ -39,21 +40,42 @@ namespace _Modules.GE_Voxel
         
         public void Draw(Vector3 Location)
         {
-            RenderCube()
-                .transform.position = Location;
+            RenderCube(Location);
+
+            // RenderCube(Location)
+            //     .transform.position = Location;
         }
         public void Draw()
         {
-            RenderCube();
+            //RenderCube();
         }
 
-        private MeshFilter RenderCube()
+        private MeshFilter RenderCube(Vector3 Location)
         {
-            _meshFilter = _gameObject.GetComponent<MeshFilter>();
-            if (_meshFilter == null)
-                _meshFilter = _gameObject.AddComponent<MeshFilter>();
             
+            MeshFilter meshFilter = _gameObject.GetComponent<MeshFilter>();
+            if (meshFilter == null)
+                meshFilter = _gameObject.AddComponent<MeshFilter>();
+
+
             Mesh mesh = new Mesh();
+
+
+            Vector3[] vertices = new Vector3[]
+            {
+                // Front face
+                new Vector3(0, 0, 0) +Location, // Bottom-left (0)
+                new Vector3(1, 0, 0) +Location, // Bottom-right (1)
+                new Vector3(1, 1, 0) +Location, // Top-right (2)
+                new Vector3(0, 1, 0) +Location, // Top-left (3)
+
+                // Back face
+                new Vector3(0, 0, 1) +Location, // Bottom-left (4)
+                new Vector3(1, 0, 1) +Location, // Bottom-right (5)
+                new Vector3(1, 1, 1) +Location, // Top-right (6)
+                new Vector3(0, 1, 1) +Location, // Top-left (7)
+            };
+
 
             int[] triangles = new int[]
             {
@@ -82,16 +104,17 @@ namespace _Modules.GE_Voxel
                 1, 0, 4, // Second triangle
             };
 
-            mesh.vertices = _v;
-            mesh.triangles = _t;
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
 
             // Optionally calculate normals and UVs
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             
             // Assign the mesh to the MeshFilter
-            _meshFilter.mesh = mesh;
-            return _meshFilter;
+            meshFilter.mesh = mesh;
+            
+            return meshFilter;
         }
     }
 }

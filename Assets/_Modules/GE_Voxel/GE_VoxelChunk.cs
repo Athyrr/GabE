@@ -1,6 +1,6 @@
 using System.Numerics;
 using UnityEngine;
-using Vector3 = System.Numerics.Vector3;
+using Vector3 = UnityEngine.Vector3;
 
 namespace _Modules.GE_Voxel
 {
@@ -19,16 +19,26 @@ namespace _Modules.GE_Voxel
 
         public void Load()
         {
-
+            
+            MeshRenderer meshRenderer = _gameObject.GetComponent<MeshRenderer>();
+            if (meshRenderer == null)
+                meshRenderer = _gameObject.AddComponent<MeshRenderer>();
+            
+            new GE_VoxelCube(_gameObject)
+                .Draw(new UnityEngine.Vector3(2, 0, 0));
+            new GE_VoxelCube(_gameObject)
+                .Draw(new UnityEngine.Vector3(-2, 0, 0));
+            
+            
+            
+            /*
             for (int i = 0; _chunckSize > i; i++)
             {
-                UnityEngine.Vector3 tPos = new UnityEngine.Vector3(i, 0, 0);
-                GE_VoxelCube GE_VC = new GE_VoxelCube(_gameObject);
+                UnityEngine.Vector3 tPos = new UnityEngine.Vector3(i*10, 0, 0);
                 
-                GE_VC.Draw();
-                _cubeP[i] = new Vector3(tPos.x, tPos.y, tPos.z);
-            }
+                new GE_VoxelCube(_gameObject)
+                    .Draw(tPos);
+            }*/
         }
-        
     }
 }
