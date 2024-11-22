@@ -15,9 +15,6 @@ namespace GabE.Module.ECS
 
         public BuildingType Type;
 
-        public bool IsBuilt;
-
-        public float BuildDuration;
-
+        public int Capacicty; 
     }
 }

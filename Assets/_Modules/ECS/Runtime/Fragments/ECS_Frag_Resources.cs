@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Entities;
 
 namespace GabE.Module.ECS
@@ -5,7 +6,7 @@ namespace GabE.Module.ECS
     /// <summary>
     /// Component data of a rewarded or collectible resource.
     /// </summary>
-    public struct ECS_Frag_Resource : IComponentData
+    public struct ECS_Frag_Resources : IComponentData
     {
         /// <summary>
         /// Represents the types of resources available.
@@ -26,18 +27,6 @@ namespace GabE.Module.ECS
             Stone = 2,
         }
 
-        public struct ResourceAmounts
-        {
-            public ResourceType resourceType;
-            public int Amount;
-
-            public ResourceAmounts(ResourceType resourceType, int amount)
-            {
-                this.resourceType = resourceType;
-                Amount = amount;
-            }
-        }
-
-        public ResourceType Type;
+        public NativeKeyValueArrays<ResourceType, int> resourceTypes; //Instead of Dictionary
     }
 }

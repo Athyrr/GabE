@@ -4,10 +4,10 @@ namespace GabE.Module.ECS
 {
     public struct ECS_Frag_GameGlobal : IComponentData
     {
+        public int DayCount;
+
         public float Prosperity;
 
-        public int DayCount;
-        
         public int Population;
     }
 }

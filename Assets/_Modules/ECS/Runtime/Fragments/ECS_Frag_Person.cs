@@ -15,7 +15,7 @@ namespace GabE.Module.ECS
         /// <summary>
         /// The amount of stamina a person has.
         /// </summary>
-        public float StaminaAmount;
+        public float Stamina;
 
         /// <summary>
         /// Is the person happy.

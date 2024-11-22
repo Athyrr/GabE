@@ -6,11 +6,12 @@ namespace GabE.Module.ECS
     {
         public enum JobType
         {
-            FoodHarvester,
-            Tiberman,
-            Miner,
-            Mason,
-            vagabond
+            None = 0,
+            FoodHarvester = 1,
+            Tiberman = 2,
+            Miner = 3,
+            Mason = 4,
+            Vagabond = 5
         }
 
         public JobType Job;
