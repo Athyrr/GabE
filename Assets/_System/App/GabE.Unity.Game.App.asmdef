@@ -1,6 +1,6 @@
 {
-    "name": "GabE.Unity.Game",
-    "rootNamespace": "GabE.Game",
+    "name": "GabE.Unity.Game.App",
+    "rootNamespace": "GabE.Game.App",
     "references": [
         "GUID:b0214a6008ed146ff8f122a6a9c2f6cc"
     ],
