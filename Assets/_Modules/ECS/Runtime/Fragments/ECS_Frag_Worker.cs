@@ -4,7 +4,7 @@ namespace GabE.Module.ECS
 {
     public struct ECS_Frag_Worker : IComponentData
     {
-        public enum JobType
+        public enum WorkType
         {
             None = 0,
             FoodHarvester = 1,
@@ -14,7 +14,7 @@ namespace GabE.Module.ECS
             Vagabond = 5
         }
 
-        public JobType Job;
+        public WorkType Work;
 
         public bool IsWorking; //Use to learn too
     }
