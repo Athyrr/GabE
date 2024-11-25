@@ -37,37 +37,32 @@ namespace _Modules.GE_Voxel
             };
 
             mesh.vertices = vertices;
-
-            int triangleIndex = 0;
-
-            int[][] faceTriangles = new int[][]
+            byte triangleIndex = 0;
+            
+            byte[][] faceTriangles = new byte[][]
             {
-                new[] {1, 2, 6, 6, 5, 1},  // Right face
-                new[] {4, 7, 3, 3, 0, 4},  // Left face
-                new[] {3, 7, 6, 6, 2, 3},  // Top face
-                new[] {4, 0, 1, 1, 5, 4},  // Bottom face
-                new[] {5, 6, 7, 7, 4, 5},   // Front face
-                new[] {0, 3, 2, 2, 1, 0},  // Back face
+                new byte[] {1, 2, 6, 6, 5, 1},  // Right face
+                new byte[] {4, 7, 3, 3, 0, 4},  // Left face
+                new byte[] {3, 7, 6, 6, 2, 3},  // Top face
+                new byte[] {4, 0, 1, 1, 5, 4},  // Bottom face
+                new byte[] {5, 6, 7, 7, 4, 5},   // Front face
+                new byte[] {0, 3, 2, 2, 1, 0},  // Back face
             };
 
-            int[] triangles = new int[600];
+            byte neighborsCount = 0;
             
-            // if(!_neighbor[3])
-            //     for (int i = 0; i < faceTriangles[3].Length; i++)
-            //     {
-            //         triangles[i] = faceTriangles[3][i];
-            //     }
-            // if(!_neighbor[2])
-            //     for (int i = 0; i < faceTriangles[2].Length; i++)
-            //     {
-            //         triangles[i] = faceTriangles[2][i];
-            //     }
-
-            int _nIndex = 0;
             foreach (var e in _neighbor)
             {
                 if (!e)
-                    for (int i = 0; i < faceTriangles[_nIndex].Length; ++i)
+                    ++neighborsCount;
+            }
+            int[] triangles = new int[neighborsCount*6];
+
+            byte _nIndex = 0;
+            foreach (var e in _neighbor)
+            {
+                if (!e)
+                    for (byte i = 0; i < faceTriangles[_nIndex].Length; ++i)
                     {
                         triangles[triangleIndex++] = faceTriangles[_nIndex][i];
                     }

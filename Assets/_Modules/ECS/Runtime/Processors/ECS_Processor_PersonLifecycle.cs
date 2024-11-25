@@ -19,7 +19,7 @@ public partial struct ECS_Processor_PersonLifecycle : ISystem
             }
         }
 
-
+        
         // Create new entity
         {
             if (global.ValueRO.DayCount % 10 != 0)

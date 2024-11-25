@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 569413887}
   - component: {fileID: 569413888}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: VoxelPlugin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -166,8 +166,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98ec2dd652fe455ab9670dc2dd76ed52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSize: 10
-  yMax: 6
+  chunkSize: 30
+  yMax: 5
+  cubeOffset: 0
+  chunkOffset: 0
+  chunkLoop: 5
+  material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
+    type: 3}
 --- !u!1 &1545421975
 GameObject:
   m_ObjectHideFlags: 0
