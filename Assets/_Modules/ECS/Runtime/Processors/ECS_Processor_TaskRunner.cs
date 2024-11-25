@@ -1,9 +1,9 @@
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine.Rendering;
 
 namespace GabE.Module.ECS
 {
+
     partial struct ECS_Processor_TaskRunner : ISystem
     {
         [BurstCompile]

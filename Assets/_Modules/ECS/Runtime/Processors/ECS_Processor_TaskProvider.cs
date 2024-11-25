@@ -21,25 +21,25 @@ namespace GabE.Module.ECS
 
                 worker.ValueRW.IsWorking = true;
 
-                switch (worker.ValueRO.Job)
+                switch (worker.ValueRO.Work)
                 {
-                    case ECS_Frag_Worker.JobType.FoodHarvester:
+                    case ECS_Frag_Worker.WorkType.FoodHarvester:
                         //
                         break;
                         
-                    case ECS_Frag_Worker.JobType.Miner:
+                    case ECS_Frag_Worker.WorkType.Miner:
                         //
                         break;
                         
-                    case ECS_Frag_Worker.JobType.Tiberman:
+                    case ECS_Frag_Worker.WorkType.Tiberman:
                         //
                         break;
                         
-                    case ECS_Frag_Worker.JobType.Mason:
+                    case ECS_Frag_Worker.WorkType.Mason:
                         //
                         break; 
 
-                    case ECS_Frag_Worker.JobType.Vagabond:
+                    case ECS_Frag_Worker.WorkType.Vagabond:
                         //
                         break;
                 }

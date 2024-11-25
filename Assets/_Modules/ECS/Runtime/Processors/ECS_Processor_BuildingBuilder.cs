@@ -17,7 +17,7 @@ public partial struct ECS_BuildingBuilderSystem : ISystem
                 entityManager.SetComponentData(buildingEntity, buildingFrag);
             }
 
-            // Supprimez le tag une fois traité
+            // @todo TW use dependecnies instead
             entityManager.RemoveComponent<ECS_Frag_BuildListener>(entity);
         }
     }
