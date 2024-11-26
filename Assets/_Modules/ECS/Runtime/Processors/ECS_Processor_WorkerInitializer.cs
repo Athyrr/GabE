@@ -1,94 +1,66 @@
 using System;
-using Unity.Burst;
-using Unity.Entities;
-using UnityEngine;
 
-namespace GabE.Module.ECS
+using Unity.Entities;
+using Unity.Burst;
+using Unity.Mathematics;
+
+using GabE.Module.ECS;
+
+
+/// <summary>
+/// Initializes worker entities.
+/// </summary>
+[BurstCompile]
+[UpdateInGroup(typeof(InitializationSystemGroup))]
+public partial struct ECS_Processor_WorkerInitializer : ISystem
 {
     /// <summary>
-    /// Initializes worker entities.
+    /// Creates worker entities with initial data.
     /// </summary>
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    partial class ECS_Processor_WorkerInitializer : SystemBase
+    private void OnCreate(ref SystemState state)
     {
-        /// <summary>
-        /// Creates worker entities with initial data.
-        /// </summary>
-        /// <param name="state">The current system state.</param>
-        [BurstCompile]
-        public void OnCreate(ref SystemState state)
+        // Random generation compatible [Burst]
+        uint seed = (uint)math.max(1, (state.WorldUnmanaged.Time.ElapsedTime * 1000));
+        Unity.Mathematics.Random random = new Unity.Mathematics.Random(seed);
+
+
+        ECS_Frag_GlobalStats stats = new(/*SystemAPI.GetSingleton<ECS_Frag_GlobalStatsInitialisation>(*/);
+
+        EntityArchetype workerArch = state.EntityManager.CreateArchetype
+            (
+            typeof(ECS_Frag_Person),
+            typeof(ECS_Frag_Worker),
+            typeof(ECS_Frag_Position),
+            typeof(ECS_Frag_Velocity)
+            );
+
+        foreach (ECS_Frag_Worker.WorkType type in Enum.GetValues(typeof(ECS_Frag_Worker.WorkType)))
         {
+            Entity entity = state.EntityManager.CreateEntity(workerArch);
 
-            Debug.Log("Enter Work Initializer : ISytem");
-
-            EntityManager entityManager = state.EntityManager;
-
-
-            ECS_Frag_GlobalStatsInitialisation stats = SystemAPI.GetSingleton<ECS_Frag_GlobalStatsInitialisation>();
-
-            //NativeArray<ComponentType> d = new NativeArray<ComponentType>(10, Allocator.Temp);
-            ////{
-            ////    ECS_Frag_Person,
-            ////    ECS_Frag_Worker,
-            ////    ECS_Frag_Position,
-            ////    ECS_Frag_Velocity
-            ////};
-
-            //var caca = entityManager.CreateArchetype(d);
-
-
-
-
-            var workerArch = entityManager.CreateArchetype
-                (
-                    typeof(ECS_Frag_Person),
-                    typeof(ECS_Frag_Worker),
-                    typeof(ECS_Frag_Position),
-                    typeof(ECS_Frag_Velocity)
-                 );
-
-            // BurstCompile compatible way to generate random number
-            uint seed = (uint)UnityEngine.Random.Range(1, int.MaxValue);
-            Unity.Mathematics.Random random = new Unity.Mathematics.Random(seed);
-
-            foreach (ECS_Frag_Worker.WorkType type in Enum.GetValues(typeof(ECS_Frag_Worker.WorkType)))
+            // Person
+            state.EntityManager.SetComponentData(entity, new ECS_Frag_Person
             {
-                Entity entity = entityManager.CreateEntity(workerArch);
+                Age = random.NextInt(stats.MinAge, stats.LifeExpectancy),
+                Stamina = 100,
+                IsHappy = true,
+                IsAlive = true
+            });
 
-                // Person
-                entityManager.SetComponentData(entity, new ECS_Frag_Person
-                {
-                    Age = random.NextInt(stats.MinAge, stats.LifeExpectancy),
-                    Stamina = 100,
-                    IsHappy = true,
-                    IsAlive = true
-                });
+            //Work
+            state.EntityManager.SetComponentData(entity, new ECS_Frag_Worker
+            {
+                Work = type,
+                IsWorking = false
+            });
 
-                //Work
-                entityManager.SetComponentData(entity, new ECS_Frag_Worker
-                {
-                    Work = type,
-                    IsWorking = false
-                });
-
-                //velocity
-                entityManager.SetComponentData(entity, new ECS_Frag_Velocity
-                {
-                    Value = stats.BaseVelocity
-                });
-            }
+            //velocity
+            state.EntityManager.SetComponentData(entity, new ECS_Frag_Velocity
+            {
+                Value = stats.BaseVelocity
+            });
         }
 
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            Debug.Log("Enter Work Initializer :override SystemBase");
-        }
-
-        protected override void OnUpdate()
-        {
-            Debug.Log("Update Work Initializer");
-        }
     }
 }
+

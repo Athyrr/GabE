@@ -1,7 +1,12 @@
-using GabE.Module.ECS;
+using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
 
+using GabE.Module.ECS;
+
+
+[BurstCompile]
+[UpdateAfter(typeof(SimulationSystemGroup))]
 public partial struct ECS_Processor_GlobalLifecycle : ISystem
 {
     #region Fields 
