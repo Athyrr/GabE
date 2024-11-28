@@ -22,7 +22,7 @@ namespace _Modules.GE_Voxel
                 for (byte j = 0; j < chunkLoop; j++)
                 {
                     Vector3 p = new Vector3(chunkSize*i*0.5f+offset,0,chunkSize*j*0.5f+offset);
-                    Debug.Log(p);
+                    //Debug.Log(p);
                     new GE_VoxelChunk(new GameObject(), p, chunkSize, (byte)(i + j) , chunkLoop, yMax, material, cubeOffset).Load();
                 } 
             }

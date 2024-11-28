@@ -63,7 +63,7 @@ namespace _Modules.GE_Voxel
                     float noiseValue = GE_Math.Voronoise((new Vector2(i, j) + new Vector2(_chunkPosition.x, _chunkPosition.z)*2)*.1f , pHeight.X, pHeight.Y); 
                     float maxY = Mathf.Clamp(noiseValue * _yMax, 0, _yMax); // Scale and clamp the noise value
                     
-                    Debug.Log(_chunkID);
+                    //Debug.Log(_chunkID);
             
                     for (byte k = 0; k < _yMax; k++)
                     {
