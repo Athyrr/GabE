@@ -2,13 +2,16 @@ using Unity.Entities;
 using Unity.Burst;
 
 using GabE.Module.ECS;
+using Unity.Collections;
 
 
 /// <summary>
 /// System responsible for destroying person entities based on certain conditions.
 /// </summary>
 [BurstCompile]
-[UpdateInGroup(typeof(SimulationSystemGroup))]
+//[UpdateInGroup(typeof(SimulationSystemGroup))]
+
+[DisableAutoCreation]
 public partial struct ECS_Processor_PersonDestroyer : ISystem
 {
     #region Aspects
@@ -35,13 +38,14 @@ public partial struct ECS_Processor_PersonDestroyer : ISystem
     /// <summary>
     /// Job that destroys old person entities.
     /// </summary>
-    [BurstCompile]
     private partial struct DestroyOldPersonsJob : IJobEntity
     {
         /// <summary>
         /// Entity command buffer for destroying entities.
         /// </summary>
-        public EntityCommandBuffer.ParallelWriter Buffer;
+        //public EntityCommandBuffer.ParallelWriter Buffer;
+        [ReadOnly] public EntityCommandBuffer Buffer;
+        public EntityManager Manager;
 
         /// <summary>
         /// Executes the job for each person entity.
@@ -53,8 +57,11 @@ public partial struct ECS_Processor_PersonDestroyer : ISystem
         {
             if (personAspect.Person.ValueRO.Age > 70) //@todo use global settings to set max age
             {
-                Buffer.DestroyEntity(index, entity);
+                //Buffer.DestroyEntity(index, entity);     
+                Buffer.DestroyEntity(entity);
             }
+            Buffer.Playback(Manager);
+            Buffer.Dispose();
 
             // @todo other destroying conditions
         }
@@ -71,18 +78,22 @@ public partial struct ECS_Processor_PersonDestroyer : ISystem
     /// <param name="state">System state.</param>
     public void OnUpdate(ref SystemState state)
     {
-        EntityCommandBufferSystem ecbs = state.World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
+        //EntityCommandBufferSystem ecbs = state.World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
+        EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.TempJob);
 
-        var buffer = ecbs.CreateCommandBuffer().AsParallelWriter();
+        //var buffer = ecbs.CreateCommandBuffer().AsParallelWriter();
 
         var destroyJob = new DestroyOldPersonsJob
         {
+            Manager = state.EntityManager,
             Buffer = buffer
         };
 
         state.Dependency = destroyJob.ScheduleParallel(state.Dependency);
 
-        ecbs.AddJobHandleForProducer(state.Dependency); //@todo figure it out
+        //ecbs.AddJobHandleForProducer(state.Dependency); //@todo figure it out
+
+
     }
 
     #endregion

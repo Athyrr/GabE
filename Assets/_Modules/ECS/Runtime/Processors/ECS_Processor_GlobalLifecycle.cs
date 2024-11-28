@@ -5,8 +5,8 @@ using UnityEngine;
 using GabE.Module.ECS;
 
 
-[BurstCompile]
-[UpdateAfter(typeof(SimulationSystemGroup))]
+//[BurstCompile]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct ECS_Processor_GlobalLifecycle : ISystem
 {
     #region Fields 
@@ -28,6 +28,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     /// <summary>
     /// Creates the singleton entity for global game data.
     /// </summary>
+    //[BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.EntityManager.CreateEntity(typeof(ECS_Frag_GameGlobal));
@@ -36,6 +37,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     /// <summary>
     /// Updates the global game state, including day progression.
     /// </summary>
+    //[BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         if (!SystemAPI.TryGetSingletonRW<ECS_Frag_GameGlobal>(out _global))

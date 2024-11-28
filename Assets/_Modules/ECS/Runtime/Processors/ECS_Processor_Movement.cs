@@ -8,25 +8,6 @@ public partial struct ECS_Processor_Movement : ISystem
 
     #region Nested 
 
-    public readonly partial struct BuildingAspect : IAspect
-    {
-        public readonly RefRW<ECS_Frag_Position> Position;
-        public readonly RefRO<ECS_Frag_Building> Building;
-    }
-
-    #endregion
-    public void OnUpdate(ref SystemState state)
-    {
-        float deltaTime = SystemAPI.Time.DeltaTime;
-
-        var job = new MovementJob
-        {
-            DeltaTime = deltaTime,
-        };
-
-        state.Dependency = job.ScheduleParallel(state.Dependency);
-    }
-
     [BurstCompile]
     partial struct MovementJob : IJobEntity
     {
@@ -56,8 +37,29 @@ public partial struct ECS_Processor_Movement : ISystem
             //if (math.distance(entityPosition.Position, buildingPosition) < 0.1f)
             //{
             //    velocity.Value = 0;
-               
+
             //}
         }
     }
+
+    public readonly partial struct BuildingAspect : IAspect
+    {
+        public readonly RefRW<ECS_Frag_Position> Position;
+        public readonly RefRO<ECS_Frag_Building> Building;
+    }
+
+    #endregion
+    public void OnUpdate(ref SystemState state)
+    {
+        float deltaTime = SystemAPI.Time.DeltaTime;
+
+        var job = new MovementJob
+        {
+            DeltaTime = deltaTime,
+        };
+
+        state.Dependency = job.ScheduleParallel(state.Dependency);
+    }
+
+  
 }
