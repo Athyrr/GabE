@@ -9,7 +9,7 @@ using Unity.Collections;
 /// System responsible for destroying person entities based on certain conditions.
 /// </summary>
 [BurstCompile]
-//[UpdateInGroup(typeof(SimulationSystemGroup))]
+//[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
 
 [DisableAutoCreation]
 public partial struct ECS_Processor_PersonDestroyer : ISystem

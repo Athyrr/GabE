@@ -2,7 +2,8 @@ using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Entities;
 
-[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateBefore(typeof(ECS_PathFindingSystem))]
+[UpdateInGroup(typeof(ECS_Group_MovementManagement))]
 public partial struct ECS_Processor_Movement : ISystem
 {
 

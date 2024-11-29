@@ -5,7 +5,9 @@ using Unity.Mathematics;
 using UnityEngine;
 
 
+
 [DisableAutoCreation]
+[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
 [BurstCompile]
 public partial struct ECS_Processor_InventoryManager : ISystem
 {
@@ -54,6 +56,8 @@ public partial struct ECS_Processor_InventoryManager : ISystem
 
         public void Execute(ref DynamicBuffer<ECS_Frag_Resource> inventory)
         {
+
+
             bool resourceFound = false;
 
             for (int i = 0; i < inventory.Length; i++)

@@ -5,7 +5,7 @@ using GabE.Module.ECS;
 
 
 [BurstCompile]
-[UpdateInGroup(typeof(InitializationSystemGroup))]
+[UpdateInGroup(typeof(ECS_Group_Initialization))]
 public partial struct ECS_Processor_InventoryManagerInitializer : ISystem
 {
     public void OnCreate(ref SystemState state)

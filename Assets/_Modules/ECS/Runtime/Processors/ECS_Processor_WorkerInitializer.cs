@@ -11,7 +11,7 @@ using GabE.Module.ECS;
 /// Initializes worker entities.
 /// </summary>
 [BurstCompile]
-[UpdateInGroup(typeof(InitializationSystemGroup))]
+[UpdateInGroup(typeof(ECS_Group_Initialization))]
 public partial struct ECS_Processor_WorkerInitializer : ISystem
 {
     /// <summary>
@@ -59,6 +59,13 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
             {
                 Value = stats.BaseVelocity
             });
+        }
+
+
+        for (int i = 0; i < 50000; i++)
+        {
+            Entity entity = state.EntityManager.CreateEntity(workerArch);
+
         }
 
     }

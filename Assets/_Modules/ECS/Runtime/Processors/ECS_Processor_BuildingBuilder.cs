@@ -1,6 +1,7 @@
 using GabE.Module.ECS;
 using Unity.Entities;
 
+[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
 public partial struct ECS_BuildingBuilderSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)

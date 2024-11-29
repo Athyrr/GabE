@@ -5,8 +5,7 @@ using UnityEngine;
 using GabE.Module.ECS;
 
 
-//[BurstCompile]
-[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
 public partial struct ECS_Processor_GlobalLifecycle : ISystem
 {
     #region Fields 

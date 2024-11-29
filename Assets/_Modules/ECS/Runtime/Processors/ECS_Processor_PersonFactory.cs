@@ -10,7 +10,7 @@ using Unity.Collections;
 /// <summary>
 /// System responsible for creating new person entities.
 /// </summary>
-[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
 [DisableAutoCreation]
 public partial struct ECS_Processor_PersonFactory : ISystem
 {
@@ -74,7 +74,10 @@ public partial struct ECS_Processor_PersonFactory : ISystem
     //public EntityCommandBufferSystem _ecbs;
 
     //private int _processDay = -1;
+
+
     #endregion
+
 
 
     #region Lifecyle
@@ -101,6 +104,7 @@ public partial struct ECS_Processor_PersonFactory : ISystem
         if (_seed == 0)
             //_seed = (uint)math.max(1, (World.Time.ElapsedTime * 1000));
             _seed = 10;
+        
 
 
         //EntityCommandBuffer.ParallelWriter buffer = _ecbs.CreateCommandBuffer().AsParallelWriter();
@@ -125,6 +129,8 @@ public partial struct ECS_Processor_PersonFactory : ISystem
 
         //_ecbs.AddJobHandleForProducer(Dependency);
     }
+
+
 
     #endregion
 }

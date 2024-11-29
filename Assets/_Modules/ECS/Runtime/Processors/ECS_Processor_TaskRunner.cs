@@ -3,7 +3,8 @@ using Unity.Entities;
 
 namespace GabE.Module.ECS
 {
-    [DisableAutoCreation]
+    [UpdateInGroup(typeof(ECS_Group_Lifecycle))]
+
     partial struct ECS_Processor_TaskRunner : ISystem
     {
         [BurstCompile]

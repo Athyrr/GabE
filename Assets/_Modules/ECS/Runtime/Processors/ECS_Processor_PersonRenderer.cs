@@ -4,8 +4,11 @@ using Unity.Transforms;
 using Unity.Mathematics;
 using Unity.Burst;
 using UnityEngine;
+using GabE.Module.ECS;
 
 [BurstCompile]
+[UpdateInGroup(typeof(PresentationSystemGroup))]
+
 public partial struct ECS_Processor_PersonRenderer : ISystem
 {
     //public void OnCreate(ref SystemState state)

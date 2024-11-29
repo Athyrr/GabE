@@ -3,6 +3,7 @@ using Unity.Entities;
 
 namespace GabE.Module.ECS
 {
+    [UpdateInGroup(typeof(ECS_Group_Lifecycle))]
     partial struct ECS_Processor_TaskProvider : ISystem
     {
         [BurstCompile]
