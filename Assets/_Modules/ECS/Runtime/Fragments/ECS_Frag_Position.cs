@@ -1,10 +1,10 @@
-using System.Numerics;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace GabE.Module.ECS
 {
     public struct ECS_Frag_Position : IComponentData
     {
-        public Vector3 Position;
+        public float3 Position;
     }
 }

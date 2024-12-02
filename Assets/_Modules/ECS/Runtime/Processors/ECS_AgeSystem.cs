@@ -22,5 +22,7 @@ partial struct ECS_AgeSystem : ISystem
     {
 
     }
+
+    
 }
 

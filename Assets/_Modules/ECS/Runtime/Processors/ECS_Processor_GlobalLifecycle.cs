@@ -68,7 +68,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
         _global.ValueRW.DayCount++;
 
         _elapsedTime = 0;
-        Debug.Log("Day passed. Day Count: " + _global.ValueRW.DayCount);
+        //Debug.Log("Day passed. Day Count: " + _global.ValueRW.DayCount);
 
         return true;
     }

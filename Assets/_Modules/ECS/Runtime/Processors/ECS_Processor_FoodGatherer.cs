@@ -13,7 +13,7 @@ public partial struct ECS_Processor_FoodGatherer : ISystem
         {
             if (harvester.ValueRO.Work == ECS_Frag_Worker.WorkType.FoodHarvester)
             {
-                float foodCollected = UnityEngine.Random.Range(1f, 5f);
+                //float foodCollected = UnityEngine.Random.Range(1f, 5f);
                 //SystemAPI.GetSingletonRW<ECS_Frag_Resources>().ValueRW.resourceTypes.Keys.First(r => r == ResourceType.Food) -= foodCollected;
             }
         }
