@@ -41,11 +41,11 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     {
         if (!SystemAPI.TryGetSingletonRW<ECS_Frag_GameGlobal>(out _global))
         {
-            Debug.Log("ECS : Global System not reachable");
+            //Debug.Log("ECS : Global System not reachable");
             return;
         }
 
-        Debug.Log("ECS : Global System Sucess");
+        //Debug.Log("ECS : Global System Sucess");
 
         _elapsedTime += SystemAPI.Time.DeltaTime;
 

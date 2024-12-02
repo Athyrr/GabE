@@ -3,7 +3,7 @@ using _Modules.GE_Voxel.Utils;
 using Unity.Mathematics;
 using UnityEngine;
 using Matrix4x4 = UnityEngine.Matrix4x4;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 using Vector2 = System.Numerics.Vector2;
 
 namespace _Modules.GE_Voxel
@@ -11,30 +11,23 @@ namespace _Modules.GE_Voxel
     public class GE_VoxelChunk
     {
         private byte _chunkSize = 15;
-        private byte _yMax = 2;
-        private byte _cubeOffset = 0;
+        private byte _yMax;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private GameObject _gameObject;
         private Material _Material;
-        private byte _chunkID;
-        private byte _loop;
         
         private Vector3 _chunkPosition;
-        private Vector3[,,] _chunk;
+        private byte[] _nchunk;
         
-        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, byte chunkID, byte loop, byte yMax, Material material, byte cubeOffset = 0)
+        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, byte yMax, Material material)
         {
             _gameObject = GO;
             _chunkSize = chunkSize;
             _yMax = yMax;
-            _chunk = new Vector3[chunkSize, _yMax, chunkSize];
-            _cubeOffset = cubeOffset;
+            _nchunk = new byte[_chunkSize * _chunkSize];
             _chunkPosition = chunkPosition;
-            _chunkID = chunkID;
-            _loop = loop;
             _Material = material;
-            
             
             MeshRenderer _meshRenderer = _gameObject.GetComponent<MeshRenderer>();
             if (_meshRenderer == null)
@@ -42,12 +35,10 @@ namespace _Modules.GE_Voxel
             
             if (_Material)
                 _meshRenderer.material = _Material;
-
             
             _meshFilter = _gameObject.GetComponent<MeshFilter>();
             if (_meshFilter == null)
                 _meshFilter = _gameObject.AddComponent<MeshFilter>();
-            
             
         }
 
@@ -61,66 +52,42 @@ namespace _Modules.GE_Voxel
                     Vector2 a = new Vector2((float)math.cos(0), (float)math.cos(2f));
                     Vector2 pHeight = new Vector2(0.5f, 0.5f) - 0.5f * a;
                     float noiseValue = GE_Math.Voronoise((new Vector2(i, j) + new Vector2(_chunkPosition.x, _chunkPosition.z)*2)*.1f , pHeight.X, pHeight.Y); 
-                    float maxY = Mathf.Clamp(noiseValue * _yMax, 0, _yMax); // Scale and clamp the noise value
+                    float maxY = Mathf.Clamp((noiseValue * _yMax)+1, 0, _yMax); // Scale and clamp the noise value
                     
-                    //Debug.Log(_chunkID);
-            
-                    for (byte k = 0; k < _yMax; k++)
-                    {
-                        if (k <= maxY)
-                        {
-                            float offset = 1 + _cubeOffset; // Cube size + gap
-                            Vector3 p = new Vector3(
-                                i * offset,
-                                k * offset,
-                                j * offset
-                            );
-                            _chunk[i, k, j] = p; // Assign voxel position
-                        }
-                        else
-                        {
-                            // Empty space
-                            _chunk[i, k, j] = Vector3.zero;
-                        }
-                    }
+                    _nchunk[i + _chunkSize*j] = (byte)(maxY);
                 }
             }
         }
 
-
         public void LoadMesh()
         {
+            Matrix4x4[] matrices;
             Mesh combined = new Mesh();
             CombineInstance[] instances = new CombineInstance[_chunkSize * _chunkSize * _yMax];
             int index = 0;
-
+            matrices = new Matrix4x4[_chunkSize * _chunkSize * _yMax * 6];
             for (byte i = 0; i < _chunkSize; ++i)
             {
                 for (byte j = 0; j < _chunkSize; ++j)
                 {
-                    for (byte k = 0; k < _yMax; ++k)
+                    byte nValue = _nchunk[i + _chunkSize * j];
+                    for (byte k = 0; k < nValue; ++k)
                     {
-                        // Neighbor existence checks
-                        bool[] neighbors = new bool[6]
-                        {
-                            (i + 1 < _chunkSize && _chunk[i + 1, k, j] != Vector3.zero),   // Right
-                            (i - 1 >= 0 && _chunk[i - 1, k, j] != Vector3.zero),           // Left
-                            (k + 1 < _yMax && _chunk[i, k + 1, j] != Vector3.zero),       // Top
-                            (k - 1 >= 0 && _chunk[i, k - 1, j] != Vector3.zero),           // Bottom
-                            (j + 1 < _chunkSize && _chunk[i, k, j + 1] != Vector3.zero),  // Front
-                            (j - 1 >= 0 && _chunk[i, k, j - 1] != Vector3.zero)           // Back
-                        };
-
-                        // Render Cube and Update Instances
-                        GE_VoxelCube cube = new GE_VoxelCube(_gameObject, neighbors);
-                        Mesh cubeMesh = cube.RenderCube(Vector3.zero);
+                        Mesh cubeMesh = RenderCube(Vector3.zero, GetNeighborsWithChunks(i, j, k, nValue));
                         instances[index].mesh = cubeMesh;
-                        instances[index].transform = Matrix4x4.Translate(_chunk[i, k, j] + _chunkPosition);
-                        index++;
+                        instances[index].transform = Matrix4x4.Translate(new Vector3(i, nValue-k,j) + _chunkPosition);
+                        
+                        Vector3 scale = Vector3.one;
+                        Quaternion rotation = Quaternion.Euler(Random.Range(-180, 180), Random.Range(-180, 180), Random.Range(-180, 180));
+                        var mat = Matrix4x4.TRS(new Vector3(i, nValue-k,j) + _chunkPosition, rotation, scale);
+                        matrices[i] = mat;
+                        ++index;
                     }
                 }
             }
 
+            int range = 100;
+            
             Array.Resize(ref instances, index); // Resize the array to exclude unused instances
             combined.CombineMeshes(instances, true, true);
             _meshFilter.sharedMesh = combined;
@@ -130,9 +97,81 @@ namespace _Modules.GE_Voxel
         {
             LoadNoise();
             LoadMesh();
-            //_gameObject.transform.SetParent(world.transform);
             _gameObject.transform.position = _chunkPosition;
             _gameObject.name = "Chunk " + _chunkPosition.x + ", " + _chunkPosition.z;
+        }
+        
+        private bool[] GetNeighborsWithChunks(int i, int j, int k, byte nValue)
+        {
+            return new bool[]
+            {
+                // Check Right Neighbor
+                !(i + 1 < _chunkSize && _nchunk[(i + 1) + _chunkSize * j] < nValue),
+                // Check Left Neighbor
+                !(i - 1 >= 0 && _nchunk[(i - 1) + _chunkSize * j] < nValue),
+                // Check Top Neighbor
+                (k - 1 >= 0 && nValue > 0),
+                // Check Bottom Neighbor
+                true, // never see this face
+                // Check Front Neighbor
+                !(j + 1 < _chunkSize && _nchunk[i + _chunkSize * (j + 1)] < nValue),
+                // Check Back Neighbor
+                !(j - 1 >= 0 && _nchunk[i + _chunkSize * (j - 1)] < nValue)
+            };
+        }
+
+        public Mesh RenderCube(Vector3 location, bool[] _neighbor)
+        {
+            Mesh mesh = new Mesh();
+
+            Vector3[] vertices = new Vector3[]
+            {
+                // Front face
+                new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 0),
+                // Back face
+                new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 1, 1), new Vector3(0, 1, 1)
+            };
+
+            mesh.vertices = vertices;
+            byte triangleIndex = 0;
+            
+            byte[][] faceTriangles = new byte[][]
+            {
+                new byte[] {1, 2, 6, 6, 5, 1},  // Right face
+                new byte[] {4, 7, 3, 3, 0, 4},  // Left face
+                new byte[] {3, 7, 6, 6, 2, 3},  // Top face
+                new byte[] {4, 0, 1, 1, 5, 4},  // Bottom face
+                new byte[] {5, 6, 7, 7, 4, 5},   // Front face
+                new byte[] {0, 3, 2, 2, 1, 0},  // Back face
+            };
+
+            byte neighborsCount = 0;
+            
+            foreach (var e in _neighbor)
+            {
+                if (!e)
+                    ++neighborsCount;
+            }
+            int[] triangles = new int[neighborsCount*6];
+
+            byte _nIndex = 0;
+            foreach (var e in _neighbor)
+            {
+                if (!e)
+                    for (byte i = 0; i < faceTriangles[_nIndex].Length; ++i)
+                    {
+                        triangles[triangleIndex++] = faceTriangles[_nIndex][i];
+                    }
+
+                ++_nIndex;
+            }
+            
+            mesh.triangles = triangles;
+
+            //mesh.RecalculateNormals();
+            //mesh.RecalculateBounds();
+
+            return mesh;
         }
     }
 }

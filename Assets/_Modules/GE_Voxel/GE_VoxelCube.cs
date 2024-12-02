@@ -72,8 +72,8 @@ namespace _Modules.GE_Voxel
             
             mesh.triangles = triangles;
 
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
+            //mesh.RecalculateNormals();
+            //mesh.RecalculateBounds();
 
             return mesh;
         }
