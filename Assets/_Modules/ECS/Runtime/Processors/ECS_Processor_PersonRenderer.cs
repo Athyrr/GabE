@@ -1,59 +1,97 @@
-using Unity.Entities;
-using Unity.Rendering;
-using Unity.Transforms;
-using Unity.Mathematics;
-using Unity.Burst;
-using UnityEngine;
 using GabE.Module.ECS;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using UnityEngine;
 
-[BurstCompile]
+/// <summary>
+/// Renders person entities using instanced drawing for performance.
+/// </summary>
 [UpdateInGroup(typeof(PresentationSystemGroup))]
-
-public partial struct ECS_Processor_PersonRenderer : ISystem
+public partial class ECS_Processor_PersonRenderer : SystemBase
 {
-    //public void OnCreate(ref SystemState state)
-    //{
-    //    // Charger le matériel et le maillage nécessaires pour les entités Person
-    //    var personMaterial = UnityEngine.Resources.Load<Material>("Materials/PersonMaterial");
-    //    var personMesh = UnityEngine.Resources.Load<Mesh>("Meshes/PersonMesh");
+    private Material personMaterial;
+    private Mesh personMesh;
 
-    //    if (personMaterial == null || personMesh == null)
-    //    {
-    //        UnityEngine.Debug.LogError("Person material or mesh not found!");
-    //        return;
-    //    }
+    /// <summary>
+    /// Initializes the system by loading the person material and mesh.
+    /// </summary>
+    protected override void OnCreate()
+    {
+        personMaterial = Resources.Load<Material>("Materials/MT_Person"); //@todo use Asset Bundle
+        var personPrefab = Resources.Load<GameObject>("Meshes/MSH_Person");
+        personMesh = personPrefab?.GetComponent<MeshFilter>()?.sharedMesh;
 
-    //    // Stocker les données pour un RenderMesh par archétype
-    //    var renderMesh = new RenderMesh
-    //    {
-    //        material = personMaterial,
-    //        mesh = personMesh,
-    //        castShadows = UnityEngine.Rendering.ShadowCastingMode.On,
-    //        receiveShadows = true
-    //    };
+        if (personMaterial == null || personMesh == null)
+        {
+            Debug.LogError("Person material or mesh not found!");
+            return;
+        }
+    }
 
-    //    state.EntityManager.AddComponentData(state.SystemHandle, renderMesh);
-    //}
+    /// <summary>
+    /// Updates the system by gathering person positions and drawing them.
+    /// </summary>
+    protected override void OnUpdate()
+    {
+        // Create a NativeList to store the transformation matrices
+        // Use a default capacity to avoid unnecessary reallocations
+        NativeList<Matrix4x4> positionsMatrices = new NativeList<Matrix4x4>(1000, Allocator.TempJob);
 
-    //public void OnUpdate(ref SystemState state)
-    //{
-    //    foreach (var (person, entity) in SystemAPI.Query<ECS_Frag_Person>().WithEntityAccess())
-    //    {
-    //        // Vérifie si l'entité n'a pas encore de RenderMesh
-    //        if (!state.EntityManager.HasComponent<RenderMesh>(entity))
-    //        {
-    //            // Ajoute un composant pour rendre l'entité visible
-    //            state.EntityManager.AddComponent<RenderMesh>(entity);
-    //            state.EntityManager.AddComponent<LocalToWorld>(entity);
-    //            state.EntityManager.AddComponent(entity, new Translation
-    //            {
-    //                Value = new float3(
-    //                    UnityEngine.Random.Range(-10f, 10f),
-    //                    0f,
-    //                    UnityEngine.Random.Range(-10f, 10f)
-    //                )
-    //            });
-    //        }
-    //    }
-    //}
+        // Job to prepare the matrices in parallel
+        var setupMaticesJob = new SetupMatricesJob
+        {
+            PositionsMatrices = positionsMatrices.AsParallelWriter()
+        };
+
+        // Schedule, execute and complete the job
+        Dependency = setupMaticesJob.ScheduleParallel(Dependency);
+        Dependency.Complete();
+
+
+        if (positionsMatrices.Length > 0)
+        {
+            // Convert NativeList to NativeArray
+            NativeArray<Matrix4x4> positionsMatricesNativeArray = new NativeArray<Matrix4x4>(positionsMatrices.Length, Allocator.Temp);
+
+            // Copy data from NativeList to NativeArray
+            for (int i = 0; i < positionsMatrices.Length; i++)
+                positionsMatricesNativeArray[i] = positionsMatrices[i];
+
+            // Convert NativeArray to a standard array
+            Matrix4x4[] matricesArray = positionsMatricesNativeArray.ToArray();
+
+            // Draw on GPU all instances of the person mesh
+            Graphics.DrawMeshInstanced(personMesh, 0, personMaterial, matricesArray);
+
+            // Dispose the NativeArray.
+            positionsMatricesNativeArray.Dispose();
+        }
+
+        // Dispose the NativeList
+        positionsMatrices.Dispose();
+    }
+
+
+
+    /// <summary>
+    /// Job to set up the transformation matrices for each person entity.
+    /// </summary>
+    [BurstCompile]
+    private partial struct SetupMatricesJob : IJobEntity
+    {
+        /// <summary>
+        /// Parallel writer for the positions matrices.
+        /// </summary>
+        public NativeList<Matrix4x4>.ParallelWriter PositionsMatrices;
+
+        /// <summary>
+        /// Executes the job for each person entity.
+        /// </summary>
+        /// <param name="position">The position component of the entity.</param>
+        private void Execute([ReadOnly] ECS_Frag_Position position)
+        {
+            PositionsMatrices.AddNoResize(Matrix4x4.Translate(position.Position));
+        }
+    }
 }
