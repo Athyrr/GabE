@@ -1,73 +1,121 @@
+using GabE.Module.ECS;
 using System;
-
-using Unity.Entities;
 using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 
-using GabE.Module.ECS;
-
-
 /// <summary>
-/// Initializes worker entities.
+/// System responsible for initializing worker entities.
 /// </summary>
-[BurstCompile]
 [UpdateInGroup(typeof(ECS_Group_Initialization))]
-public partial struct ECS_Processor_WorkerInitializer : ISystem
+public partial class ECS_Processor_WorkerInitializer : SystemBase
 {
     /// <summary>
-    /// Creates worker entities with initial data.
+    /// Called when the system is created.
     /// </summary>
-    private void OnCreate(ref SystemState state)
+    protected override void OnCreate()
     {
-        // Random generation compatible [Burst]
-        uint seed = (uint)math.max(1, (state.WorldUnmanaged.Time.ElapsedTime * 1000));
-        Unity.Mathematics.Random random = new Unity.Mathematics.Random(seed);
+        int workerCount = 800; //@todo define number of start entities
+        var workTypes = (ECS_Frag_Worker.WorkType[])Enum.GetValues(typeof(ECS_Frag_Worker.WorkType));
 
-
-        ECS_Frag_GlobalStats stats = new(/*SystemAPI.GetSingleton<ECS_Frag_GlobalStatsInitialisation>(*/);
-
-        EntityArchetype workerArch = state.EntityManager.CreateArchetype
-            (
-            typeof(ECS_Frag_Person),
-            typeof(ECS_Frag_Worker),
-            typeof(ECS_Frag_Position),
-            typeof(ECS_Frag_Velocity)
-            );
-
-        foreach (ECS_Frag_Worker.WorkType type in Enum.GetValues(typeof(ECS_Frag_Worker.WorkType)))
+        // Schedule a job to create and initialize the entities
+        var job = new WorkerInitializationJob
         {
-            Entity entity = state.EntityManager.CreateEntity(workerArch);
+            EntityCount = workerCount,
 
-            // Person
-            state.EntityManager.SetComponentData(entity, new ECS_Frag_Person
-            {
-                Age = random.NextInt(stats.MinAge, stats.LifeExpectancy),
-                Stamina = 100,
-                IsHappy = true,
-                IsAlive = true
-            });
+            WorkTypes = new NativeArray<ECS_Frag_Worker.WorkType>(workTypes, Allocator.Persistent),
 
-            //Work
-            state.EntityManager.SetComponentData(entity, new ECS_Frag_Worker
-            {
-                Work = type,
-                IsWorking = false
-            });
+            Seed = (uint)UnityEngine.Random.Range(1, int.MaxValue),
 
-            //velocity
-            state.EntityManager.SetComponentData(entity, new ECS_Frag_Velocity
-            {
-                Value = stats.BaseVelocity
-            });
-        }
+            EntityCommandBuffer = new EntityCommandBuffer(Allocator.TempJob),
+        };
+
+        // Execute the job
+        Dependency = job.Schedule(Dependency);
+        Dependency.Complete();
+
+        // Playback and cleanup
+        job.EntityCommandBuffer.Playback(EntityManager);
+        job.EntityCommandBuffer.Dispose();
+        job.WorkTypes.Dispose();
+    }
 
 
-        for (int i = 0; i < 50000; i++)
+    /// <summary>
+    /// Called every frame. Disabled after initialization.
+    /// </summary>
+    protected override void OnUpdate() { Enabled = false; }
+
+    /// <summary>
+    /// Burst-compiled job for initializing worker entities.
+    /// </summary>
+    [BurstCompile]
+    private struct WorkerInitializationJob : IJob
+    {
+        /// <summary>
+        /// Number of entities to create.
+        /// </summary>
+        public int EntityCount;
+
+        /// <summary>
+        /// Array of available work types.
+        /// </summary>
+        public NativeArray<ECS_Frag_Worker.WorkType> WorkTypes;
+
+        /// <summary>
+        /// Seed for random number generation.
+        /// </summary>
+        public uint Seed;
+
+        /// <summary>
+        /// Entity command buffer for deferred entity creation and component addition.
+        /// </summary>
+        public EntityCommandBuffer EntityCommandBuffer;
+
+        /// <summary>
+        /// Executes the entity initialization job.
+        /// </summary>
+        public void Execute()
         {
-            Entity entity = state.EntityManager.CreateEntity(workerArch);
+            Unity.Mathematics.Random random = new Unity.Mathematics.Random(Seed);
 
+            for (int i = 0; i < EntityCount; i++)
+            {
+                Entity entity = EntityCommandBuffer.CreateEntity();
+                ECS_Frag_Worker.WorkType workType = WorkTypes[random.NextInt(0, WorkTypes.Length)];
+
+                // Add components
+                EntityCommandBuffer.AddComponent(entity, new ECS_Frag_Person
+                {
+                    Age = random.NextInt(18, 65),
+                    Stamina = 100,
+                    IsHappy = true,
+                    IsAlive = true
+                });
+
+                EntityCommandBuffer.AddComponent(entity, new ECS_Frag_Worker
+                {
+                    Work = workType,
+                    IsWorking = false
+                });
+                
+                EntityCommandBuffer.AddComponent(entity, new ECS_Frag_Position
+                {
+                    Position = random.NextFloat3(),
+                });
+
+                EntityCommandBuffer.AddComponent(entity, new ECS_Frag_Velocity
+                {
+                    Value = 2f
+                });
+
+                EntityCommandBuffer.AddComponent(entity, new ECS_Frag_TargetPosition
+                {
+                    Position = new float3(random.NextFloat(0, 10), 0, random.NextFloat(0, 10))
+                });
+            }
         }
-
     }
 }
-
