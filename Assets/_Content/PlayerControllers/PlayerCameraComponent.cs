@@ -1,70 +1,79 @@
 using UnityEngine;
 
 /// <summary>
-/// A camera script that orbits around a target transform or a fixed point.
+///Allows the camera to orbit around a target transform.
 /// </summary>
 public class PlayerCameraComponent : MonoBehaviour
 {
     [Header("Target Settings")]
     [SerializeField]
     [Tooltip("The target transform to orbit around. If null, uses targetPoint.")]
-    private Transform target;
+    private Transform _target;
 
     [SerializeField]
     [Tooltip("The target point to orbit around if target is null.")]
-    private Vector3 targetPoint = Vector3.zero;
+    private Vector3 _targetPoint = Vector3.zero;
 
     [Header("Distance Settings")]
     [SerializeField]
     [Tooltip("The initial distance from the target.")]
-    private float distance = 10f;
+    private float _initialDistance = 10f;
 
     [SerializeField]
     [Tooltip("The minimum distance from the target.")]
     [Min(0)]
-    private float minDistance = 2f;
+    private float _minDistance = 2f;
 
     [SerializeField]
     [Tooltip("The maximum distance from the target.")]
     [Min(0)]
-    private float maxDistance = 20f;
+    private float _maxDistance = 20f;
 
     [Header("Speed Settings")]
     [SerializeField]
     [Min(0)]
     [Tooltip("The speed at which the camera zooms in and out.")]
-    private float scrollSpeed = 2f;
+    private float _scrollSpeed = 2f;
 
     [SerializeField]
     [Min(0)]
     [Tooltip("The speed at which the camera orbits horizontally (right-click).")]
-    private float orbitSpeed = 100f;
+    private float _orbitSpeed = 100f;
 
     [SerializeField]
     [Range(0,1)]
     [Tooltip("The smoothing time for camera movements.")]
-    private float smoothTime = 0.2f;
+    private float _smoothTime = 0.2f;
 
-    // Target distance 
-    private float targetDistance;
+    /// <summary>
+    /// Target distance 
+    /// </summary>
+    private float _targetDistance;
 
-    // Current vertical angle 
-    private float currentVerticalAngle = 30f;
+    /// <summary>
+    /// Current vertical angle 
+    /// </summary>
+    private float _currentVerticalAngle = 30f;
 
-    // Target vertical angle 
-    private float targetVerticalAngle;
+    /// <summary>
+    /// Target vertical angle 
+    /// </summary>
+    private float _targetVerticalAngle;
 
-    // Current horizontal angle 
-    private float currentHorizontalAngle = 0f;
+    /// <summary>
+    /// Current horizontal angle 
+    /// </summary>
+    private float _currentHorizontalAngle = 0f;
 
-    // Target horizontal angle 
-    private float targetHorizontalAngle;
+    /// <summary>
+    /// Target horizontal angle 
+    /// </summary>
+    private float _targetHorizontalAngle;
 
-    // Velocity for SmoothDamp
-    private Vector3 velocity = Vector3.zero;
-
-    // Current target position
-    private Vector3 currentTargetPosition;
+    /// <summary>
+    /// Current target position
+    /// </summary>
+    private Vector3 _currentTargetPosition;
 
 
     /// <summary>
@@ -73,12 +82,11 @@ public class PlayerCameraComponent : MonoBehaviour
     void Start()
     {
         // Use targetPoint if target is null
-        currentTargetPosition = target != null ? target.position : targetPoint;
+        _currentTargetPosition = _target != null ? _target.position : _targetPoint;
 
-        // Initialize variables
-        targetDistance = distance;
-        targetVerticalAngle = currentVerticalAngle;
-        targetHorizontalAngle = currentHorizontalAngle;
+        _targetDistance = _initialDistance;
+        _targetVerticalAngle = _currentVerticalAngle;
+        _targetHorizontalAngle = _currentHorizontalAngle;
     }
 
     /// <summary>
@@ -87,43 +95,43 @@ public class PlayerCameraComponent : MonoBehaviour
     void LateUpdate()
     {
         // Update the current target position
-        currentTargetPosition = target != null ? target.position : targetPoint;
+        _currentTargetPosition = _target != null ? _target.position : _targetPoint;
 
         // Handle zooming with the mouse scroll wheel
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0f)
         {
             // Adjust vertical angle and distance based on scroll input
-            targetVerticalAngle += scroll * scrollSpeed * 10f;
-            targetVerticalAngle = Mathf.Clamp(targetVerticalAngle, 5f, 85f); // Limit vertical angle
+            _targetVerticalAngle += scroll * _scrollSpeed * 10f;
+            _targetVerticalAngle = Mathf.Clamp(_targetVerticalAngle, 5f, 85f); // Limit vertical angle
 
-            targetDistance -= scroll * scrollSpeed;
-            targetDistance = Mathf.Clamp(targetDistance, minDistance, maxDistance); // Limit distance
+            _targetDistance -= scroll * _scrollSpeed;
+            _targetDistance = Mathf.Clamp(_targetDistance, _minDistance, _maxDistance); // Limit distance
         }
 
         // Horizontal rotation with right-click
         if (Input.GetMouseButton(1))
         {
             float horizontalInput = Input.GetAxis("Mouse X");
-            targetHorizontalAngle += horizontalInput * orbitSpeed * Time.deltaTime;
+            _targetHorizontalAngle += horizontalInput * _orbitSpeed * Time.deltaTime;
         }
 
         // Calculate the target position in spherical coordinates
-        float verticalAngle = Mathf.Deg2Rad * targetVerticalAngle; // Vertical angle 
-        float horizontalAngle = Mathf.Deg2Rad * targetHorizontalAngle; // Horizontal angle 
+        float verticalAngle = Mathf.Deg2Rad * _targetVerticalAngle; // Vertical angle 
+        float horizontalAngle = Mathf.Deg2Rad * _targetHorizontalAngle; // Horizontal angle 
 
-        Vector3 targetPosition = currentTargetPosition + new Vector3(
+        Vector3 targetPosition = _currentTargetPosition + new Vector3(
             Mathf.Sin(verticalAngle) * Mathf.Cos(horizontalAngle), // x
             Mathf.Cos(verticalAngle),                   // y
             Mathf.Sin(verticalAngle) * Mathf.Sin(horizontalAngle)  // z
-        ) * targetDistance;
+        ) * _targetDistance;
 
 
         // Smooth the camera's position
-        transform.position = Vector3.Lerp(transform.position, targetPosition, smoothTime);
+        transform.position = Vector3.Lerp(transform.position, targetPosition, _smoothTime);
 
         // Smooth the camera's rotation
-        Quaternion targetRotation = Quaternion.LookRotation(currentTargetPosition - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, smoothTime);
+        Quaternion targetRotation = Quaternion.LookRotation(_currentTargetPosition - transform.position);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, _smoothTime);
     }
 }
