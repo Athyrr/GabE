@@ -10,6 +10,7 @@ namespace _Modules.GE_Voxel
 {
     public class GE_VoxelChunk
     {
+        private byte _initChunkSize = 15;
         private byte _chunkSize = 15;
         private float _cubeSize = 1f;
         private byte _yMax;
@@ -26,6 +27,7 @@ namespace _Modules.GE_Voxel
             _gameObject = GO;
             _cubeSize = cubeSize;
             _chunkSize = (byte)(chunkSize / _cubeSize);
+            _initChunkSize = (byte)(chunkSize / _cubeSize);
             _yMax = yMax;
             _nchunk = new byte[_chunkSize * _chunkSize];
             _chunkPosition = chunkPosition;
@@ -42,6 +44,29 @@ namespace _Modules.GE_Voxel
             if (_meshFilter == null)
                 _meshFilter = _gameObject.AddComponent<MeshFilter>();
             
+        }
+
+        public void UpdateLOD(float cubeSize)
+        {
+            // step 1: clear all cube in this chunk
+            /*for (byte i = 0; i < _chunkSize; ++i)
+            {
+                for (byte j = 0; j < _chunkSize; ++j)
+                {
+                    _nchunk[i + _chunkSize*j] = 0;
+                }
+            }*/
+            
+            // step 2: replace allocated memory
+            _cubeSize = cubeSize;
+            _chunkSize = (byte)(_initChunkSize / _cubeSize);
+            _nchunk = new byte[_chunkSize * _chunkSize];
+            
+            // step 3: recalculate noise
+            LoadNoise();
+            
+            // step 4: redraw all cube
+            LoadMesh();
         }
 
         public void LoadNoise()

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 
 namespace _Modules.GE_Voxel
@@ -19,6 +20,8 @@ namespace _Modules.GE_Voxel
         private GE_VoxelChunk[] _chunks;
         public Camera _playerCamera;
         public bool debug = false;
+
+        private float _lastCameraPositionValue; // x + z
         
         private IEnumerator Start()
         {
@@ -36,35 +39,67 @@ namespace _Modules.GE_Voxel
                 for (byte j = 0; j < chunkLoop; j++)
                 {
                     Vector3 p = new Vector3(chunkSize*i*0.5f+offset - chunkLoop * chunkSize *0.25f,0,chunkSize*j*0.5f+offset - chunkLoop * chunkSize *0.25f);
-                    //Debug.Log(p);
-                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1f, yMax, material);
+                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1, yMax, material);
+                    
                     e.Load();
                     _chunks[i + j * chunkLoop] = e;
-                    
                     yield return new WaitForSeconds( 0.005f );
                 } 
             }
-            
-            /*
-            for (byte i = 0; i < _chunks.Length; ++i)
+            foreach (var e in _chunks)
             {
-                int x = i%chunkLoop;
-                int y = (int)math.floor(i / chunkLoop); // because chunkSize cannot be 0
-                
-                DrawBox(
-                    new Vector3(x + x * chunkSize + chunkSize *0.5f, 0f, y + y * chunkSize + chunkSize *0.5f),
-                    Quaternion.identity,
-                    new Vector3(chunkSize, yMax, chunkSize),
-                    Color.blue
-                );
-            }*/
+                yield return new WaitForSeconds( 0.005f );
+                e.UpdateLOD(2);
+            }
+            foreach (var e in _chunks)
+            {
+                yield return new WaitForSeconds( 0.005f );
+                e.UpdateLOD(4);
+            }
+            foreach (var e in _chunks)
+            {
+                yield return new WaitForSeconds( 0.005f );
+                e.UpdateLOD(1);
+            }
+            
             
             enabled = true;
+            InvokeRepeating("MyUpdate",0.5f,0.5f);
         }
 
         private void Update()
         {
+            #if UNITY_EDITOR
+                if (debug)
+                    for (byte i = 0; i < _chunks.Length; ++i)
+                    {
+                        int x = i % chunkLoop;
+                        int y = (int)math.floor(i / chunkLoop); // because chunkSize cannot be 0
+                        Vector3 chunkPos = new Vector3(
+                            x + x * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.25f,
+                            0f,
+                            y + y * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.25f);
+                        DrawBox(
+                            chunkPos,
+                            Quaternion.identity,
+                            new Vector3(chunkSize, yMax, chunkSize),
+                            Color.blue
+                        );
+                    }
+            #endif
+        }
 
+        private void MyUpdate()
+        {
+            
+            Vector2 cPos = new Vector2(_playerCamera.transform.position.x, _playerCamera.transform.position.z);
+            float tmpValue = cPos.x + cPos.y;
+
+            if (_lastCameraPositionValue < tmpValue + 0.1f && _lastCameraPositionValue > tmpValue - 0.1f)
+                return;
+            else _lastCameraPositionValue = tmpValue;
+            
+            Debug.Log(_lastCameraPositionValue);
 
             for (byte i = 0; i < _chunks.Length; ++i)
             {
@@ -79,32 +114,23 @@ namespace _Modules.GE_Voxel
 
                 // draw debug bounds of chuncks
                 float cPosF = chunkPos.x + chunkPos.y + chunkSize*0.5f;
-                float pPosF = _playerCamera.transform.position.x + _playerCamera.transform.position.z;
-                float d = math.distance(pPosF, cPosF);
+                float d = math.distance(tmpValue, cPosF);
                 
                 /*
-                if (d < 5)
-                    
-                else if (d > 5)
-                    
-                else if (d > 5)
-                */
+                 * TODO: LOD with camera and cube densities
+                 */
                 
-                
-                
-                
-                
-                #if UNITY_EDITOR
-                    if (debug)
-                        DrawBox(
-                            chunkPos,
-                            Quaternion.identity,
-                            new Vector3(chunkSize, yMax, chunkSize),
-                            Color.blue
-                        );
-                #endif
+                // Debug.Log(d);
+                //
+                //
+                // if (d < 35)
+                //     e.UpdateLOD(1f);
+                // else if (d > 125)
+                //     e.UpdateLOD(2f);
+                // else 
+                //     e.UpdateLOD(3f);
+
             }
-            //enabled = false;
         }
         
         public void DrawBox(Vector3 pos, Quaternion rot, Vector3 scale, Color c)
