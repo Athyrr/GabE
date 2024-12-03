@@ -11,6 +11,7 @@ namespace _Modules.GE_Voxel
     public class GE_VoxelChunk
     {
         private byte _chunkSize = 15;
+        private float _cubeSize = 1f;
         private byte _yMax;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
@@ -20,10 +21,11 @@ namespace _Modules.GE_Voxel
         private Vector3 _chunkPosition;
         private byte[] _nchunk;
         
-        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, byte yMax, Material material)
+        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material)
         {
             _gameObject = GO;
-            _chunkSize = chunkSize;
+            _cubeSize = cubeSize;
+            _chunkSize = (byte)(chunkSize / _cubeSize);
             _yMax = yMax;
             _nchunk = new byte[_chunkSize * _chunkSize];
             _chunkPosition = chunkPosition;
@@ -51,7 +53,7 @@ namespace _Modules.GE_Voxel
                     // Generate noise value for height 0.5 - 0.5 *cos( vec2(0.0,2.0) );
                     Vector2 a = new Vector2((float)math.cos(0), (float)math.cos(2f));
                     Vector2 pHeight = new Vector2(0.5f, 0.5f) - 0.5f * a;
-                    float noiseValue = GE_Math.Voronoise((new Vector2(i, j) + new Vector2(_chunkPosition.x, _chunkPosition.z)*2)*.1f , pHeight.X, pHeight.Y); 
+                    float noiseValue = GE_Math.Voronoise((new Vector2(i* _cubeSize, j* _cubeSize) + new Vector2(_chunkPosition.x, _chunkPosition.z)*2)*.1f , pHeight.X, pHeight.Y); 
                     float maxY = Mathf.Clamp((noiseValue * _yMax)+1, 0, _yMax); // Scale and clamp the noise value
                     
                     _nchunk[i + _chunkSize*j] = (byte)(maxY);
@@ -75,12 +77,14 @@ namespace _Modules.GE_Voxel
                     {
                         Mesh cubeMesh = RenderCube(Vector3.zero, GetNeighborsWithChunks(i, j, k, nValue));
                         instances[index].mesh = cubeMesh;
-                        instances[index].transform = Matrix4x4.Translate(new Vector3(i, nValue-k,j) + _chunkPosition);
+                        instances[index].transform = Matrix4x4.Translate(new Vector3(i * _cubeSize, nValue-k,j * _cubeSize) + _chunkPosition);
                         
-                        Vector3 scale = Vector3.one;
-                        Quaternion rotation = Quaternion.Euler(Random.Range(-180, 180), Random.Range(-180, 180), Random.Range(-180, 180));
-                        var mat = Matrix4x4.TRS(new Vector3(i, nValue-k,j) + _chunkPosition, rotation, scale);
-                        matrices[i] = mat;
+                        // Vector3 scale = Vector3.one;
+                        // Quaternion rotation = Quaternion.Euler(Random.Range(-180, 180), Random.Range(-180, 180), Random.Range(-180, 180));
+                        // var mat = Matrix4x4.TRS(new Vector3(i, nValue-k,j) + _chunkPosition, rotation, scale);
+                        // matrices[i] = mat;
+                        cubeMesh.RecalculateNormals();
+                        cubeMesh.RecalculateBounds();
                         ++index;
                     }
                 }
@@ -127,9 +131,9 @@ namespace _Modules.GE_Voxel
             Vector3[] vertices = new Vector3[]
             {
                 // Front face
-                new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 0),
+                new Vector3(0, 0, 0), new Vector3(_cubeSize, 0, 0), new Vector3(_cubeSize, _cubeSize, 0), new Vector3(0, _cubeSize, 0),
                 // Back face
-                new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 1, 1), new Vector3(0, 1, 1)
+                new Vector3(0, 0, _cubeSize), new Vector3(_cubeSize, 0, _cubeSize), new Vector3(_cubeSize, _cubeSize, _cubeSize), new Vector3(0, _cubeSize, _cubeSize)
             };
 
             mesh.vertices = vertices;

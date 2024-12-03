@@ -37,7 +37,7 @@ namespace _Modules.GE_Voxel
                 {
                     Vector3 p = new Vector3(chunkSize*i*0.5f+offset - chunkLoop * chunkSize *0.25f,0,chunkSize*j*0.5f+offset - chunkLoop * chunkSize *0.25f);
                     //Debug.Log(p);
-                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, yMax, material);
+                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1f, yMax, material);
                     e.Load();
                     _chunks[i + j * chunkLoop] = e;
                     
