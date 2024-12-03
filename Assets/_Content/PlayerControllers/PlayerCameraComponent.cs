@@ -21,22 +21,27 @@ public class PlayerCameraComponent : MonoBehaviour
 
     [SerializeField]
     [Tooltip("The minimum distance from the target.")]
+    [Min(0)]
     private float minDistance = 2f;
 
     [SerializeField]
     [Tooltip("The maximum distance from the target.")]
+    [Min(0)]
     private float maxDistance = 20f;
 
     [Header("Speed Settings")]
     [SerializeField]
+    [Min(0)]
     [Tooltip("The speed at which the camera zooms in and out.")]
     private float scrollSpeed = 2f;
 
     [SerializeField]
+    [Min(0)]
     [Tooltip("The speed at which the camera orbits horizontally (right-click).")]
     private float orbitSpeed = 100f;
 
     [SerializeField]
+    [Range(0,1)]
     [Tooltip("The smoothing time for camera movements.")]
     private float smoothTime = 0.2f;
 
