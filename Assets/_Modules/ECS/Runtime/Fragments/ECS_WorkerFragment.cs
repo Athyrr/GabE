@@ -2,7 +2,7 @@ using Unity.Entities;
 
 namespace GabE.Module.ECS
 {
-    public struct ECS_Frag_Worker : IComponentData
+    public struct ECS_WorkerFragment : IComponentData
     {
         public enum WorkType
         {
@@ -17,5 +17,7 @@ namespace GabE.Module.ECS
         public WorkType Work;
 
         public bool IsWorking; //Use to learn too
+
+        public int HoldingCapacity;
     }
 }
