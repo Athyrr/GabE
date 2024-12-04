@@ -139,9 +139,6 @@ namespace _Modules.GE_Voxel
                     }
                 }
             }
-
-            int range = 100;
-            
             Array.Resize(ref instances, index); // Resize the array to exclude unused instances
             combined.CombineMeshes(instances, true, true);
             _meshFilter.sharedMesh = combined;
@@ -150,9 +147,6 @@ namespace _Modules.GE_Voxel
         public void Load()
         {
             //LoadNoise();
-
-            var nativeNChunk = new NativeArray<byte>(_nchunk.Length, Allocator.TempJob);
-            byte b;
             var job = new LoadNoise()
             {
                 chunkSize = _chunkSize,
