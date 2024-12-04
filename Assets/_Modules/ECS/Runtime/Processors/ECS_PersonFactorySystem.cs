@@ -1,70 +1,84 @@
-using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
+using Unity.Jobs;
 
-[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
-public partial class ECS_Processor_PersonFactory : SystemBase
+using GabE.Module.ECS;
+
+
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
+public partial struct ECS_PersonFactorySystem : ISystem
 {
-    private int _lastProcessedDay;
+    private int lastProcessedDay;
 
-    protected override void OnCreate()
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
     {
-        _lastProcessedDay = -1;
+        lastProcessedDay = -1;
     }
 
-    protected override void OnUpdate()
+    public void OnUpdate(ref SystemState state)
     {
-        var global = SystemAPI.GetSingleton<ECS_Frag_GameGlobal>();
+        var global = SystemAPI.GetSingleton<ECS_GlobalLifecyleFragment>();
         int currentDay = global.DayCount;
 
-        // Check for create
-        if (currentDay % 10 != 0 || currentDay == _lastProcessedDay)
-            return;
+        if (currentDay % 10 != 0 || currentDay == lastProcessedDay) return;
+        lastProcessedDay = currentDay;
 
-        _lastProcessedDay = currentDay;
-        Debug.Log($"ECS : Factory creating a person on Day {currentDay}");
+        var ecbSystem = state.World.GetExistingSystemManaged<BeginSimulationEntityCommandBufferSystem>();
+        var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
 
-        // Create buffer using ECB system
-        var bufferSystem = World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
-        var ecb = bufferSystem.CreateCommandBuffer().AsParallelWriter();
+        int entityCount = 50;
 
-        //@todo generate seed
-        uint seed = (uint)(10);
-
-        // Schedule job and execute
-        Dependency = new CreatePersonJob
+        var job = new CreatePersonJob
         {
             CommandBuffer = ecb,
-            Seed = seed
-        }.ScheduleParallel(Dependency);
+            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000 + 1)
+        };
 
-        // BeginSimulationEntityCommandBufferSystem to auto PlayBack and Dispose Job.
-        bufferSystem.AddJobHandleForProducer(Dependency);
+        state.Dependency = job.ScheduleParallel(entityCount, 64, state.Dependency);
+
+        ecbSystem.AddJobHandleForProducer(state.Dependency);
     }
 
     [BurstCompile]
-    private partial struct CreatePersonJob : IJobEntity
+    private partial struct CreatePersonJob : IJobFor
     {
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
         public uint Seed;
 
-        public void Execute([EntityIndexInQuery] int entityInQueryIndex)
+        public void Execute(int index)
         {
-            Unity.Mathematics.Random random = new Unity.Mathematics.Random(Seed + (uint)entityInQueryIndex);
+            var random = new Unity.Mathematics.Random(Seed + (uint)index);
 
-            var newPerson = CommandBuffer.CreateEntity(entityInQueryIndex);
-            CommandBuffer.AddComponent(entityInQueryIndex, newPerson, new ECS_Frag_Person
+            var entity = CommandBuffer.CreateEntity(index);
+
+            CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
-                Age = random.NextInt(16, 71),
-                Stamina = 100,
+                Age = random.NextInt(18, 80),
+                IsExhausted = false,
                 IsHappy = true,
                 IsAlive = true
             });
-            CommandBuffer.AddComponent(entityInQueryIndex, newPerson, new ECS_Frag_Worker
+
+            CommandBuffer.AddComponent(index, entity, new ECS_WorkerFragment
             {
-                Work = ECS_Frag_Worker.WorkType.None,
+                Work = ECS_WorkerFragment.WorkType.None,
                 IsWorking = false
+            });
+
+            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
+            {
+                Position = random.NextFloat3()
+            });
+
+            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Velocity
+            {
+                Value = 5
+            });
+
+            CommandBuffer.AddComponent(index, entity, new ECS_Frag_TargetPosition
+            {
+                Position = random.NextFloat3()
             });
         }
     }
