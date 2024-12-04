@@ -1,8 +1,14 @@
-using GabE.Module.ECS;
 using Unity.Entities;
 
-public struct ECS_Frag_ResourceZone : IComponentData
+using GabE.Module.ECS;
+
+
+/// <summary>
+/// Component data for storing fragment resource.
+/// </summary>
+public struct ECS_ResourceZoneFragment: IComponentData
 {
     public ResourceType Type;
-    public float Quantity; 
 }
+
+

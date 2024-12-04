@@ -3,7 +3,7 @@ using Unity.Entities;
 
 
 
-[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 partial struct ECS_BuildingEffectSystem : ISystem
 {
     [BurstCompile]

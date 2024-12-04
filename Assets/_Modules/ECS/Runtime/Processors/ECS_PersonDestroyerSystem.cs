@@ -19,7 +19,7 @@ public partial struct ECS_Processor_PersonDestroyer : ISystem
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
         [BurstCompile]
-        public void Execute([EntityIndexInQuery] int entityInQueryIndex, Entity entity, in ECS_Frag_Person person)
+        public void Execute([EntityIndexInQuery] int entityInQueryIndex, Entity entity, in ECS_PersonFragment person)
         {
             // Check age condition
             if (person.Age > 90)

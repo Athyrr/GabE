@@ -2,7 +2,7 @@ using Unity.Entities;
 
 namespace GabE.Module.ECS
 {
-    public struct ECS_Frag_GameGlobal : IComponentData
+    public struct ECS_GlobalLifecyleFragment : IComponentData
     {
         public int DayCount;
 

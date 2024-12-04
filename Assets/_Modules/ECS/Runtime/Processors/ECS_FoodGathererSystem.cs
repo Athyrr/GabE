@@ -3,7 +3,7 @@ using System.Linq;
 using Unity.Burst;
 using Unity.Entities;
 
-[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 [BurstCompile]
 public partial struct ECS_Processor_FoodGatherer : ISystem
 {

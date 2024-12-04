@@ -5,7 +5,7 @@ using UnityEngine;
 using GabE.Module.ECS;
 
 
-[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_Processor_GlobalLifecycle : ISystem
 {
     #region Fields 
@@ -13,7 +13,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     /// <summary>
     /// Singleton component for global game state.
     /// </summary>
-    private RefRW<ECS_Frag_GameGlobal> _global;
+    private RefRW<ECS_GlobalLifecyleFragment> _global;
 
     /// <summary>
     /// Time since the last day passed.
@@ -30,7 +30,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     //[BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.EntityManager.CreateEntity(typeof(ECS_Frag_GameGlobal));
+        state.EntityManager.CreateEntity(typeof(ECS_GlobalLifecyleFragment));
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     //[BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        if (!SystemAPI.TryGetSingletonRW<ECS_Frag_GameGlobal>(out _global))
+        if (!SystemAPI.TryGetSingletonRW<ECS_GlobalLifecyleFragment>(out _global))
         {
             //Debug.Log("ECS : Global System not reachable");
             return;

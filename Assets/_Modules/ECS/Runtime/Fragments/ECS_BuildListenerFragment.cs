@@ -3,11 +3,11 @@ using Unity.Entities;
 
 namespace GabE.Module.ECS
 {
-    public struct ECS_Frag_BuildListener : IComponentData
+    public struct ECS_BuildListenerFragment : IComponentData
     {
         public Entity BuildingEntity;
 
-        public ECS_Frag_BuildListener(Entity buildingEntity)
+        public ECS_BuildListenerFragment(Entity buildingEntity)
         {
             BuildingEntity = buildingEntity;
         }

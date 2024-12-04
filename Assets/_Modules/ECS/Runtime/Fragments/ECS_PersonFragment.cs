@@ -4,7 +4,7 @@ using Unity.Entities;
 /// <summary>
 /// Component data for a person entity.
 /// </summary>
-public struct ECS_Frag_Person : IComponentData
+public struct ECS_PersonFragment : IComponentData
 {
     /// <summary>
     /// The age of a person.
@@ -12,9 +12,9 @@ public struct ECS_Frag_Person : IComponentData
     public int Age;
 
     /// <summary>
-    /// The amount of stamina a person has.
+    /// Is the person exhausted.
     /// </summary>
-    public float Stamina;
+    public bool IsExhausted;
 
     /// <summary>
     /// Is the person happy.

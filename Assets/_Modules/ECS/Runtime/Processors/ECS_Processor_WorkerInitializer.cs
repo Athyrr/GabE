@@ -25,9 +25,9 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
         if (isInitialized) return;
 
         int workerCount = 100;
-        var workTypes = new NativeArray<ECS_Frag_Worker.WorkType>
+        var workTypes = new NativeArray<ECS_WorkerFragment.WorkType>
         (
-            (ECS_Frag_Worker.WorkType[])Enum.GetValues(typeof(ECS_Frag_Worker.WorkType)),
+            (ECS_WorkerFragment.WorkType[])Enum.GetValues(typeof(ECS_WorkerFragment.WorkType)),
             Allocator.TempJob
         );
 
@@ -50,7 +50,7 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
     private partial struct WorkerInitializationJob : IJobFor
     {
         public int EntityCount;
-        [ReadOnly] public NativeArray<ECS_Frag_Worker.WorkType> WorkTypes;
+        [ReadOnly] public NativeArray<ECS_WorkerFragment.WorkType> WorkTypes;
         public uint Seed;
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
@@ -60,7 +60,7 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
 
             var entity = CommandBuffer.CreateEntity(index);
 
-            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Person
+            CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
                 Age = random.NextInt(18, 80),
                 IsExhausted = false,
@@ -68,7 +68,7 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
                 IsAlive = true
             });
 
-            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Worker
+            CommandBuffer.AddComponent(index, entity, new ECS_WorkerFragment
             {
                 Work = WorkTypes[random.NextInt(WorkTypes.Length)],
                 IsWorking = false
