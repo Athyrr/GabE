@@ -64,9 +64,9 @@ namespace _Modules.GE_Voxel
             
             
             enabled = true;
-            InvokeRepeating("MyUpdate",0.5f,0.5f);
+            InvokeRepeating("GE_Update",0.5f,0.5f);
         }
-
+        
         private void Update()
         {
             #if UNITY_EDITOR
@@ -89,7 +89,7 @@ namespace _Modules.GE_Voxel
             #endif
         }
 
-        private void MyUpdate()
+        private void GE_Update()
         {
             
             Vector2 cPos = new Vector2(_playerCamera.transform.position.x, _playerCamera.transform.position.z);
@@ -99,8 +99,6 @@ namespace _Modules.GE_Voxel
                 return;
             else _lastCameraPositionValue = tmpValue;
             
-            Debug.Log(_lastCameraPositionValue);
-
             for (byte i = 0; i < _chunks.Length; ++i)
             {
                 GE_VoxelChunk e = _chunks[i];
@@ -111,24 +109,9 @@ namespace _Modules.GE_Voxel
                     x + x * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize *0.25f,
                     0f,
                     y + y * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize *0.25f);
-
-                // draw debug bounds of chuncks
+                
                 float cPosF = chunkPos.x + chunkPos.y + chunkSize*0.5f;
                 float d = math.distance(tmpValue, cPosF);
-                
-                /*
-                 * TODO: LOD with camera and cube densities
-                 */
-                
-                // Debug.Log(d);
-                //
-                //
-                // if (d < 35)
-                //     e.UpdateLOD(1f);
-                // else if (d > 125)
-                //     e.UpdateLOD(2f);
-                // else 
-                //     e.UpdateLOD(3f);
 
             }
         }

@@ -1,9 +1,12 @@
-using System;
+using Unity.Burst;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
+
+using Unity.Collections;
 
 namespace _Modules.GE_Voxel.Utils
 {
@@ -23,18 +26,20 @@ namespace _Modules.GE_Voxel.Utils
                 Vector2.Dot(p,new Vector2(419.2f,371.9f)));
 
             return new Vector3(
-                math.frac(Mathf.Sin(q.X) * 43758.5453f),
-                math.frac(Mathf.Sin(q.Y) * 43758.5453f),
-                math.frac(Mathf.Sin(q.Z) * 43758.5453f)
+                math.frac(math.sin(q.X) * 43758.5453f),
+                math.frac(math.sin(q.Y) * 43758.5453f),
+                math.frac(math.sin(q.Z) * 43758.5453f)
             );
         }
 
-
+        /*
+         * Check GE_VoxelChunk to see how integrate this at BurstCompile
+         */
         public static float Voronoise( in Vector2 p, float u, float v )
         {
-            float k = 1.0f + 63.0f * (float)Math.Pow(1.0-v,6.0);
+            float k = 1.0f + 63.0f * (float)math.pow(1.0-v,6.0);
 
-            Vector2 i = new Vector2((float)Math.Floor(p.X), (float)Math.Floor(p.Y));
+            Vector2 i = new Vector2((float)math.floor(p.X), (float)math.floor(p.Y));
             Vector2 f = new Vector2(math.frac(p.X), math.frac(p.Y)); // place add frac with vec2 :(
         
             Vector2 a = Vector2.Zero;
@@ -50,7 +55,5 @@ namespace _Modules.GE_Voxel.Utils
             
             return a.X/a.Y;
         }
-
-
     }
 }

@@ -174,7 +174,7 @@ MonoBehaviour:
   material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
     type: 3}
   _playerCamera: {fileID: 1545421977}
-  debug: 1
+  debug: 0
 --- !u!1 &1545421975
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,10 +329,14 @@ MonoBehaviour:
   _targetPoint: {x: 0, y: 0, z: 0}
   _initialDistance: 10
   _minDistance: 2
-  _maxDistance: 20
-  _scrollSpeed: 2
+  _maxDistance: 120
+  _scrollSpeed: 4
   _orbitSpeed: 100
-  _smoothTime: 0.2
+  _smoothTime: 0.4
+  _stepAngle: 1
+  _WASDSpeed: 10
+  _debugPrefab: {fileID: 919132149155446097, guid: d1fd5a1b7b1ace240b2d702d7fd84058,
+    type: 3}
 --- !u!1 &1715901858
 GameObject:
   m_ObjectHideFlags: 0
