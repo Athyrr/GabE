@@ -6,6 +6,7 @@ using Unity.Entities;
 using Unity.Jobs;
 
 using GabE.Module.ECS;
+using Unity.Mathematics;
 
 
 [UpdateInGroup(typeof(ECS_Group_Initialization))]
@@ -25,7 +26,7 @@ public partial struct ECS_WorkerInitializationSystem : ISystem
         if (isInitialized)
             return;
 
-        int workerCount = 100000; 
+        int workerCount = 512/**1024*/; 
 
         var workTypes = new NativeArray<ECS_WorkerFragment.WorkType>
         (
@@ -40,7 +41,7 @@ public partial struct ECS_WorkerInitializationSystem : ISystem
         {
             EntityCount = workerCount,
             WorkTypes = workTypes,
-            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000 + 1),
+            Seed = (uint)(SystemAPI.Time.DeltaTime + 1),
             CommandBuffer = writter
         };
 
@@ -55,21 +56,24 @@ public partial struct ECS_WorkerInitializationSystem : ISystem
         isInitialized = true;
     }
 
-    [BurstCompile(CompileSynchronously = true, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
+    [BurstCompile(CompileSynchronously = true, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.FastCompilation)]
     private partial struct WorkerInitializationJob : IJobFor
     {
+        public uint Seed;
         public int EntityCount;
         [ReadOnly] public NativeArray<ECS_WorkerFragment.WorkType> WorkTypes;
-        public uint Seed;
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
 
-        public void Execute(int index)
+        public void Execute(int index) 
         {
-
             var random = new Unity.Mathematics.Random(Seed + (uint)index);
-
             var entity = CommandBuffer.CreateEntity(index);
+
+            var x = random.NextFloat(-50, 50);
+            var y = random.NextFloat(1, 5);
+            var z = random.NextFloat(-50, 50);
+
 
             CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
@@ -87,12 +91,12 @@ public partial struct ECS_WorkerInitializationSystem : ISystem
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
             {
-                Position = random.NextFloat3(-30f, 30f)
+                Position = new float3(x, y, z)
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Velocity
             {
-                Value = 5
+                Value = 10
             });
         }
 

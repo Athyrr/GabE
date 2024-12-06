@@ -4,6 +4,8 @@ using Unity.Jobs;
 using Unity.Collections;
 
 using GabE.Module.ECS;
+using System;
+using Unity.Mathematics;
 
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
@@ -36,7 +38,7 @@ public partial struct ECS_PersonFactorySystem : ISystem
         var job = new CreatePersonJob
         {
             CommandBuffer = writter,
-            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000 + 1)
+            Seed = (uint)(SystemAPI.Time.DeltaTime + 1),
         };
 
         state.Dependency = job.ScheduleParallel(entityCount, 64, state.Dependency);
@@ -46,7 +48,7 @@ public partial struct ECS_PersonFactorySystem : ISystem
         ecb.Dispose();
     }
 
-    [BurstCompile]
+    [BurstCompile(CompileSynchronously = true, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
     private partial struct CreatePersonJob : IJobFor
     {
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
@@ -57,6 +59,10 @@ public partial struct ECS_PersonFactorySystem : ISystem
             var random = new Unity.Mathematics.Random(Seed + (uint)index);
 
             var entity = CommandBuffer.CreateEntity(index);
+
+            var x = random.NextFloat(-50, 50);
+            var y = random.NextFloat(1, 5);
+            var z = random.NextFloat(-50, 50);
 
             CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
@@ -74,17 +80,17 @@ public partial struct ECS_PersonFactorySystem : ISystem
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
             {
-                Position = random.NextFloat3()
+                Position = new float3(0,0,0) 
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Velocity
             {
-                Value = 5
+                Value = 10
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_TargetPosition
             {
-                Position = random.NextFloat3(-30f, 30f)
+                Position = new float3(x,y,z)
             });
         }
     }

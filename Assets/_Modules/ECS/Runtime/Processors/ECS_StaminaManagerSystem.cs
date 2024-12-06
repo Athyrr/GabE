@@ -1,27 +1,23 @@
+using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Entities;
 
 
-[UpdateInGroup(typeof(ECS_Group_Lifecycle))]
-
-partial struct NewISystemScript : ISystem
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
+partial struct ECS_StaminaManagerSystem : ISystem
 {
-    [BurstCompile]
-    public void OnCreate(ref SystemState state)
-    {
-
-    }
+    public int _currentDay;
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        if (!SystemAPI.TryGetSingleton<ECS_GlobalLifecyleFragment>(out var lifecycle))
+            return;
 
-    }
+        if (lifecycle.DayCount <= _currentDay)
+            return;
 
-    [BurstCompile]
-    public void OnDestroy(ref SystemState state)
-    {
-
+        _currentDay = lifecycle.DayCount;
     }
 }
 
