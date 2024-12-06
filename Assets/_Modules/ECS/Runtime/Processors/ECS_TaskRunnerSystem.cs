@@ -1,14 +1,17 @@
-using GabE.Module.ECS;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Collections;
+
+using GabE.Module.ECS;
+
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
-[BurstCompile]
 public partial struct ECS_TaskProgressSystem : ISystem
 {
-    [BurstCompile]
+    private DynamicBuffer<ECS_ResourceStorageFragment> _storage;
+
+    [BurstCompile(FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
     private partial struct TaskProgressJob : IJobEntity
     {
         public float DeltaTime;
@@ -31,26 +34,34 @@ public partial struct ECS_TaskProgressSystem : ISystem
                 task.HasFinished = true;
                 worker.IsWorking = false;
 
-                CommandBuffer.RemoveComponent<ECS_Frag_TargetPosition>(entityInQueryIndex, entity); //Set new position > Storage
+                //CommandBuffer.SetComponent<ECS_Frag_TargetPosition>(entityInQueryIndex, entity, storagePosition); //Set new position > Storage
             }
         }
     }
 
+    private void OnCreate(ref SystemState state)
+    {
+        SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
+    }
+
+    [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
     public void OnUpdate(ref SystemState state)
     {
         float deltaTime = SystemAPI.Time.DeltaTime;
 
-        var ecbSystem = state.World.GetExistingSystemManaged<BeginSimulationEntityCommandBufferSystem>();
-        var commandBuffer = ecbSystem.CreateCommandBuffer().AsParallelWriter();
+        EntityCommandBuffer commandBuffer = new EntityCommandBuffer(Allocator.TempJob);
+        var writter = commandBuffer.AsParallelWriter();
 
         var taskProgressJob = new TaskProgressJob
         {
             DeltaTime = deltaTime,
-            CommandBuffer = commandBuffer
+            CommandBuffer = writter
         };
 
         state.Dependency = taskProgressJob.ScheduleParallel(state.Dependency);
+        state.Dependency.Complete();
 
-        ecbSystem.AddJobHandleForProducer(state.Dependency);
+        commandBuffer.Playback(state.EntityManager);
+        commandBuffer.Dispose();
     }
 }

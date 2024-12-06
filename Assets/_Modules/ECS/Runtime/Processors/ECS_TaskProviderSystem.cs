@@ -3,29 +3,16 @@ using Unity.Collections;
 using Unity.Burst;
 using GabE.Module.ECS;
 
+
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_TaskProviderSystem : ISystem
 {
     private EntityQuery _workerQuery;
     private EntityQuery _resourceQuery;
 
-    public void OnCreate(ref SystemState state)
-    {
-        // Available workers query 
-        _workerQuery = state.GetEntityQuery(
-            ComponentType.ReadOnly<ECS_WorkerFragment>(),
-            ComponentType.Exclude<ECS_Frag_TargetPosition>()
-        );
-
-        // Resource zones query
-        _resourceQuery = state.GetEntityQuery(
-            ComponentType.ReadOnly<ECS_Frag_Position>(),
-            ComponentType.ReadOnly<ECS_ResourceZoneFragment>()
-        );
-    }
 
     [BurstCompile]
-    private partial struct TaskProviderJob : IJobEntity
+    private partial struct TaskProviderJob : IJobEntity //@todo il en pense quoi David de la boucle dans le job
     {
         [ReadOnly] public NativeArray<ECS_Frag_Position> ResourcePositions;
         [ReadOnly] public NativeArray<ECS_ResourceZoneFragment> ResourceTypes;
@@ -33,9 +20,9 @@ public partial struct ECS_TaskProviderSystem : ISystem
 
         public void Execute(Entity entity, ref ECS_WorkerFragment worker)
         {
-            //if worker holding resources he goes to storage
+            //if worker holding resources he goes to storage postion
 
-            if (worker.IsWorking || worker.Work == ECS_WorkerFragment.WorkType.None)
+            if (worker.IsWorking || worker.Work == ECS_WorkerFragment.WorkType.Vagabond)
                 return;
 
             ResourceType targetType = worker.Work switch
@@ -62,24 +49,42 @@ public partial struct ECS_TaskProviderSystem : ISystem
         }
     }
 
+    public void OnCreate(ref SystemState state)
+    {
+        // Available workers query 
+        _workerQuery = state.GetEntityQuery(
+            ComponentType.ReadOnly<ECS_WorkerFragment>(),
+            ComponentType.Exclude<ECS_Frag_TargetPosition>()
+        );
+
+        // Resource zones query
+        _resourceQuery = state.GetEntityQuery(
+            ComponentType.ReadOnly<ECS_Frag_Position>(),
+            ComponentType.ReadOnly<ECS_ResourceZoneFragment>()
+        );
+    }
+
+    //[BurstCompile(OptimizeFor = OptimizeFor.Performance)]
     public void OnUpdate(ref SystemState state)
     {
-        var ecbSystem = state.World.GetExistingSystemManaged<BeginSimulationEntityCommandBufferSystem>();
-        var commandBuffer = ecbSystem.CreateCommandBuffer().AsParallelWriter();
+        EntityCommandBuffer commandBuffer = new EntityCommandBuffer(Allocator.TempJob);
+        var writter = commandBuffer.AsParallelWriter();
 
         var resourcePositions = _resourceQuery.ToComponentDataArray<ECS_Frag_Position>(Allocator.TempJob);
         var resourceTypes = _resourceQuery.ToComponentDataArray<ECS_ResourceZoneFragment>(Allocator.TempJob);
 
-        var job = new TaskProviderJob
+        var taskProviderjob = new TaskProviderJob
         {
             ResourcePositions = resourcePositions,
             ResourceTypes = resourceTypes,
-            CommandBuffer = commandBuffer
+            CommandBuffer = writter
         };
 
-        state.Dependency = job.ScheduleParallel(_workerQuery, state.Dependency);
+        state.Dependency = taskProviderjob.ScheduleParallel(_workerQuery, state.Dependency);
+        state.Dependency.Complete();
 
-        ecbSystem.AddJobHandleForProducer(state.Dependency);
+        commandBuffer.Playback(state.EntityManager);
+        commandBuffer.Dispose();
 
         resourcePositions.Dispose();
         resourceTypes.Dispose();
