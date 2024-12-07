@@ -180,15 +180,6 @@ public class PlayerCameraComponent : MonoBehaviour
                 Color.red,
                 0.5f
             );
-        
-        /*float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
-        float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
-        
-        // draw plane when we move curvor
-        System.Numerics.Vector2 coord = new System.Numerics.Vector2((int)p.x, (int)p.y);
-        float noiseY = GE_Math.Voronoise(
-            coord, pHeight.x, pHeight.y
-        )+2;*/
 
         var vc = _voxelRunner._chunks;
         byte[] _allChunksIndexActivable;
@@ -200,14 +191,16 @@ public class PlayerCameraComponent : MonoBehaviour
             int x = i % _chunkLoop;
             int y = i / _chunkLoop;
             Vector3 chunkPosition = new Vector3(
-                (x * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2,
+                (_chunkSize * x - _chunkLoop * _chunkSize / 2 + _chunkSize / 2),
                 3f,
-                (y * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2
+                (_chunkSize * y - _chunkLoop * _chunkSize / 2 + _chunkSize / 2)
             );
+
+            Debug.DrawLine(chunkPosition, new Vector3(chunkPosition.x, chunkPosition.y + 100, chunkPosition.z), Color.magenta, 1f);
 
             bool isIntersecting = GE_Math.IsRayIntersectingAABB(
                 new float3(transform.position.x, transform.position.y, transform.position.z),
-                new float3(p.x, p.y, p.z),
+                new float3(ray.direction.x, ray.direction.y, ray.direction.z),
                 new float3(chunkPosition.x, chunkPosition.y, chunkPosition.z),
                 new float3(_chunkSize, _yMax, _chunkSize)
             );
@@ -234,16 +227,12 @@ public class PlayerCameraComponent : MonoBehaviour
             int chunkX = chunkIndex % _chunkLoop;
             int chunkY = chunkIndex / _chunkLoop;
             Vector3 chunkPosition = new Vector3(
-                (chunkX * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2,
+                (_chunkSize * chunkX - _chunkLoop * _chunkSize / 2 + _chunkSize / 2),
                 5f,
-                chunkY * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f + 2
-                
+                _chunkSize * chunkY - _chunkLoop * _chunkSize / 2 + _chunkSize / 2
+
             );
 
-            float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
-            float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
-
-            float2 offset = math.distance(new float2(_chunkLoop * 0.5f), new float2( chunkIndex * 0.1f, chunkIndex % 10));
             for (byte x = 0; x < _chunkSize; ++x)
             {
                 for (byte z = 0; z < _chunkSize; ++z)
@@ -261,7 +250,7 @@ public class PlayerCameraComponent : MonoBehaviour
 
                     bool isCubeIntersecting = GE_Math.IsRayIntersectingAABB(
                         new float3(transform.position.x, transform.position.y, transform.position.z),
-                        new float3(p.x, p.y, p.z),
+                        new float3(ray.direction.x, ray.direction.y, ray.direction.z),
                         new float3(cubePosition.x, cubePosition.y, cubePosition.z),
                         new float3(1, 1, 1)
                     );
