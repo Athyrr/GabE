@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace GabE.Module.ECS
 {
-    public struct ECS_Frag_Position : IComponentData
+    public struct ECS_PositionFragment : IComponentData
     {
         public float3 Position;
         //public byte SpatialHashingID;
