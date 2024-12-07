@@ -1,13 +1,13 @@
 using Unity.Entities;
 using Unity.Burst;
+using Unity.Mathematics;
 
 using GabE.Module.ECS;
-using Unity.Mathematics;
 
 
 [BurstCompile]
 [UpdateInGroup(typeof(ECS_Group_Initialization))]
-public partial struct ECS_InventoryManagerInitializationSystem : ISystem
+public partial struct ECS_StorageInitializationSystem : ISystem
 {
     public void OnCreate(ref SystemState state)
     {

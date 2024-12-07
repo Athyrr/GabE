@@ -1,5 +1,5 @@
 using GabE.Module.ECS;
-using Unity.Collections;
+using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
 
@@ -11,9 +11,9 @@ public partial class ECS_PersonRendererSystem : SystemBase
 
     protected override void OnCreate()
     {
-        personMaterial = Resources.Load<Material>("Materials/MT_Person");
-        var personPrefab = Resources.Load<GameObject>("Meshes/MSH_Person");
-        personMesh = personPrefab?.GetComponent<MeshFilter>()?.sharedMesh;
+        personMaterial = Resources.Load<Material>("Workers/Materials/MT_Person");
+        GameObject personPrefab = Resources.Load<GameObject>("Workers/Meshes/MSH_Person");
+        personMesh = personPrefab.GetComponent<MeshFilter>()?.sharedMesh;
 
         if (personMaterial == null || personMesh == null)
             Debug.LogError("Person material or mesh not found!");
@@ -24,16 +24,11 @@ public partial class ECS_PersonRendererSystem : SystemBase
         if (personMaterial == null || personMesh == null)
             return;
 
-        var matrices = new NativeList<Matrix4x4>(Allocator.TempJob);
+        var matrices = new List<Matrix4x4>();
 
-        Entities.ForEach((in ECS_Frag_Position position, in ECS_WorkerFragment worker) =>
-        {
-            matrices.Add(Matrix4x4.Translate(position.Position));
-        }).Run();
+        foreach (var (position, worker) in SystemAPI.Query<RefRO<ECS_Frag_Position>, RefRO<ECS_WorkerFragment>>())
+            matrices.Add(Matrix4x4.Translate(position.ValueRO.Position));
 
-        if (matrices.Length > 0)
-            Graphics.DrawMeshInstanced(personMesh, 0, personMaterial, matrices.AsArray().ToArray());
-
-        matrices.Dispose();
+        Graphics.DrawMeshInstanced(personMesh, 0, personMaterial, matrices.ToArray() /*512*/);
     }
 }

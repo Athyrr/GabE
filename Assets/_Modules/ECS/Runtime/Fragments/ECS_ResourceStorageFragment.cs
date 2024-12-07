@@ -1,5 +1,6 @@
-using GabE.Module.ECS;
 using Unity.Entities;
+
+using GabE.Module.ECS;
 
 
 /// <summary>
@@ -8,5 +9,6 @@ using Unity.Entities;
 public struct ECS_ResourceStorageFragment : IBufferElementData
 {
     public ResourceType Type;
+
     public int Quantity;
 }

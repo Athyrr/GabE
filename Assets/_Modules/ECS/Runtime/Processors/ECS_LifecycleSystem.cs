@@ -1,19 +1,12 @@
+using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
-
-using GabE.Module.ECS;
-
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
-public partial struct ECS_Processor_GlobalLifecycle : ISystem
+[BurstCompile]
+public partial struct ECS_LifecycleSystem : ISystem
 {
     #region Fields 
-
-    /// <summary>
-    /// Singleton component for global game state.
-    /// </summary>
-    private RefRW<ECS_GlobalLifecyleFragment> _global;
 
     /// <summary>
     /// Time since the last day passed.
@@ -27,29 +20,30 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     /// <summary>
     /// Creates the singleton entity for global game data.
     /// </summary>
-    //[BurstCompile]
+    [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.EntityManager.CreateEntity(typeof(ECS_GlobalLifecyleFragment));
+        Entity e = state.EntityManager.CreateEntity();
+        state.EntityManager.AddComponent<ECS_GlobalLifecyleFragment>(e);
     }
 
     /// <summary>
     /// Updates the global game state, including day progression.
     /// </summary>
-    //[BurstCompile]
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        if (!SystemAPI.TryGetSingletonRW<ECS_GlobalLifecyleFragment>(out _global))
-        {
-            //Debug.Log("ECS : Global System not reachable");
-            return;
-        }
-
-        //Debug.Log("ECS : Global System Sucess");
-
         _elapsedTime += SystemAPI.Time.DeltaTime;
 
-        ApplyDayPassedEffects();
+        if (!SystemAPI.TryGetSingletonRW<ECS_GlobalLifecyleFragment>(out var global))
+            return;
+
+        var query = SystemAPI.QueryBuilder().WithAll<ECS_PersonFragment>().Build();
+        int populationCount = query.CalculateEntityCount();
+
+        global.ValueRW.Population = populationCount;
+
+        ApplyDayPassedEffects(global);
     }
 
     #endregion
@@ -60,15 +54,13 @@ public partial struct ECS_Processor_GlobalLifecycle : ISystem
     /// Applies the effects of a day passing in the game.
     /// </summary>
     /// <returns>True if a day has passed, false otherwise.</returns>
-    private bool ApplyDayPassedEffects()
+    private bool ApplyDayPassedEffects(RefRW<ECS_GlobalLifecyleFragment> global)
     {
         if (_elapsedTime < 5)  // every 5 seconds
             return false;
 
-        _global.ValueRW.DayCount++;
-
+        global.ValueRW.DayCount++;
         _elapsedTime = 0;
-        //Debug.Log("Day passed. Day Count: " + _global.ValueRW.DayCount);
 
         return true;
     }

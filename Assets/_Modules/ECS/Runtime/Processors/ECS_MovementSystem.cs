@@ -11,7 +11,7 @@ public partial struct ECS_Processor_Movement : ISystem
     #region Nested
 
     [BurstCompile]
-    partial struct MovementJob : IJobEntity
+    partial struct MovementJob : IJobEntity //@todo Use JobChunk
     {
         public float DeltaTime;
         public float StopDistance;
@@ -52,8 +52,8 @@ public partial struct ECS_Processor_Movement : ISystem
         };
 
         state.Dependency = job.ScheduleParallel(state.Dependency);
-
         state.Dependency.Complete();
+       
         ecb.Playback(state.EntityManager);
         ecb.Dispose();
     }

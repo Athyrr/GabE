@@ -1,35 +1,33 @@
 using GabE.Module.ECS;
+using UnityEngine;
+
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 
-
-[DisableAutoCreation]
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 [BurstCompile]
-public partial struct ECS_InventoryManagerSystem : ISystem
+public partial struct ECS_StorageManagerSystem : ISystem
 {
+    int lastProcessedDay;
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var addResourceJob = new AddResourceJob
-        {
-            ResourceType = ResourceType.Wood,
-            Quantity = 10
-        };
+        var lifecycle = SystemAPI.GetSingleton<ECS_GlobalLifecyleFragment>();
+        var storage = SystemAPI.GetSingletonBuffer<ECS_ResourceStorageFragment>();
+        int currentDay = lifecycle.DayCount;
 
-        Debug.Log("Add resource");
+        if (currentDay == lastProcessedDay || currentDay == 0)
+            return;
 
-        state.Dependency = addResourceJob.ScheduleParallel(state.Dependency);
-        state.Dependency.Complete();
+        lastProcessedDay = currentDay;
 
         var consumeResourceJob = new ConsumeResourceJob
         {
-            ResourceType = ResourceType.Wood,
-            Quantity = 5
+            ResourceType = ResourceType.Food,
+            Quantity = lifecycle.Population * 1 // 1 > number food per person
         };
 
         Debug.Log("Consume resource");
@@ -40,7 +38,6 @@ public partial struct ECS_InventoryManagerSystem : ISystem
         // Display inventory
         foreach (var (inventory, entity) in SystemAPI.Query<DynamicBuffer<ECS_ResourceStorageFragment>>().WithEntityAccess())
         {
-            Debug.Log($"Entity {entity.Index}:");
             foreach (var resource in inventory)
             {
                 Debug.Log($"Resource: {resource.Type}, Quantity: {resource.Quantity}");
@@ -60,16 +57,16 @@ public partial struct ECS_InventoryManagerSystem : ISystem
 
             for (int i = 0; i < inventory.Length; i++)
             {
-                if (inventory[i].Type == ResourceType)
+                if (inventory[i].Type != ResourceType)
+                    continue;
+
+                inventory[i] = new ECS_ResourceStorageFragment
                 {
-                    inventory[i] = new ECS_ResourceStorageFragment
-                    {
-                        Type = inventory[i].Type,
-                        Quantity = inventory[i].Quantity + Quantity
-                    };
-                    resourceFound = true;
-                    break;
-                }
+                    Type = inventory[i].Type,
+                    Quantity = inventory[i].Quantity + Quantity
+                };
+                resourceFound = true;
+                break;
             }
 
             if (!resourceFound)
@@ -91,26 +88,20 @@ public partial struct ECS_InventoryManagerSystem : ISystem
 
         public void Execute(ref DynamicBuffer<ECS_ResourceStorageFragment> inventory)
         {
-            for (int i = 0; i < inventory.Length; i++)
+            for (int i = 0; i < inventory.Length; ++i)
             {
-                if (inventory[i].Type == ResourceType)
+                if (inventory[i].Type != ResourceType)
+                    continue;
+
+                int newQuantity = math.max(0, inventory[i].Quantity - Quantity);
+                inventory[i] = new ECS_ResourceStorageFragment
                 {
-                    int newQuantity = math.max(0, inventory[i].Quantity - Quantity);
-                    inventory[i] = new ECS_ResourceStorageFragment
-                    {
-                        Type = inventory[i].Type,
-                        Quantity = newQuantity
-                    };
+                    Type = inventory[i].Type,
+                    Quantity = newQuantity
+                };
 
-                    if (newQuantity == 0)
-                    {
-                        inventory.RemoveAt(i);
-                    }
-                    return;
-                }
+                return;
             }
-
-            Debug.LogWarning($"Tried to consume {Quantity} of {ResourceType}, but it doesn't exist in the inventory.");
         }
     }
 }

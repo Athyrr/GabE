@@ -6,11 +6,11 @@ using Unity.Entities;
 using Unity.Jobs;
 
 using GabE.Module.ECS;
+using Unity.Mathematics;
 
 
 [UpdateInGroup(typeof(ECS_Group_Initialization))]
-[DisableAutoCreation]
-public partial struct ECS_Processor_WorkerInitializer : ISystem
+public partial struct ECS_WorkerInitializationSystem : ISystem
 {
     private bool isInitialized;
 
@@ -20,45 +20,60 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
         isInitialized = false;
     }
 
+    //[BurstDiscard]
     public void OnUpdate(ref SystemState state)
     {
-        if (isInitialized) return;
+        if (isInitialized)
+            return;
 
-        int workerCount = 100;
+        int workerCount = 512/**1024*/; 
+
         var workTypes = new NativeArray<ECS_WorkerFragment.WorkType>
         (
             (ECS_WorkerFragment.WorkType[])Enum.GetValues(typeof(ECS_WorkerFragment.WorkType)),
             Allocator.TempJob
         );
 
-        var ecbSystem = state.World.GetExistingSystemManaged<BeginSimulationEntityCommandBufferSystem>();
-        var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
+        EntityCommandBuffer commandBuffer = new EntityCommandBuffer(Allocator.TempJob);
+        var writter = commandBuffer.AsParallelWriter();
 
-        var jobHandle = new WorkerInitializationJob
+        var workerInitJob = new WorkerInitializationJob
         {
             EntityCount = workerCount,
             WorkTypes = workTypes,
-            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000 + 1),
-            CommandBuffer = ecb
-        }.ScheduleParallel(workerCount, 64, state.Dependency);
+            Seed = (uint)(SystemAPI.Time.DeltaTime + 1),
+            CommandBuffer = writter
+        };
 
-        ecbSystem.AddJobHandleForProducer(state.Dependency);
+        state.Dependency = workerInitJob.ScheduleParallel(workerCount, 64, state.Dependency);
+        state.Dependency.Complete();
+
+        commandBuffer.Playback(state.EntityManager);
+        commandBuffer.Dispose();
+
+        workTypes.Dispose();
+
         isInitialized = true;
     }
 
-    [BurstCompile]
+    [BurstCompile(CompileSynchronously = true, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.FastCompilation)]
     private partial struct WorkerInitializationJob : IJobFor
     {
+        public uint Seed;
         public int EntityCount;
         [ReadOnly] public NativeArray<ECS_WorkerFragment.WorkType> WorkTypes;
-        public uint Seed;
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
-        public void Execute(int index)
+
+        public void Execute(int index) 
         {
             var random = new Unity.Mathematics.Random(Seed + (uint)index);
-
             var entity = CommandBuffer.CreateEntity(index);
+
+            var x = random.NextFloat(-50, 50);
+            var y = random.NextFloat(1, 5);
+            var z = random.NextFloat(-50, 50);
+
 
             CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
@@ -76,17 +91,12 @@ public partial struct ECS_Processor_WorkerInitializer : ISystem
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
             {
-                Position = random.NextFloat3()
+                Position = new float3(x, y, z)
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Velocity
             {
-                Value = 5
-            });
-
-            CommandBuffer.AddComponent(index, entity, new ECS_Frag_TargetPosition
-            {
-                Position = random.NextFloat3()
+                Value = 10
             });
         }
 

@@ -1,8 +1,11 @@
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Collections;
 
 using GabE.Module.ECS;
+using System;
+using Unity.Mathematics;
 
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
@@ -21,26 +24,31 @@ public partial struct ECS_PersonFactorySystem : ISystem
         var global = SystemAPI.GetSingleton<ECS_GlobalLifecyleFragment>();
         int currentDay = global.DayCount;
 
-        if (currentDay % 10 != 0 || currentDay == lastProcessedDay) return;
+        if (currentDay % 5 != 0 || currentDay == lastProcessedDay || currentDay == 0)
+            return;
+
         lastProcessedDay = currentDay;
 
-        var ecbSystem = state.World.GetExistingSystemManaged<BeginSimulationEntityCommandBufferSystem>();
-        var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
 
-        int entityCount = 50;
+        EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
+        var writter = ecb.AsParallelWriter();
+
+        int entityCount = 1024;
 
         var job = new CreatePersonJob
         {
-            CommandBuffer = ecb,
-            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000 + 1)
+            CommandBuffer = writter,
+            Seed = (uint)(SystemAPI.Time.DeltaTime + 1),
         };
 
         state.Dependency = job.ScheduleParallel(entityCount, 64, state.Dependency);
+        state.CompleteDependency();
 
-        ecbSystem.AddJobHandleForProducer(state.Dependency);
+        ecb.Playback(state.EntityManager);
+        ecb.Dispose();
     }
 
-    [BurstCompile]
+    [BurstCompile(CompileSynchronously = true, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
     private partial struct CreatePersonJob : IJobFor
     {
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
@@ -52,6 +60,10 @@ public partial struct ECS_PersonFactorySystem : ISystem
 
             var entity = CommandBuffer.CreateEntity(index);
 
+            var x = random.NextFloat(-50, 50);
+            var y = random.NextFloat(1, 5);
+            var z = random.NextFloat(-50, 50);
+
             CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
             {
                 Age = random.NextInt(18, 80),
@@ -62,23 +74,23 @@ public partial struct ECS_PersonFactorySystem : ISystem
 
             CommandBuffer.AddComponent(index, entity, new ECS_WorkerFragment
             {
-                Work = ECS_WorkerFragment.WorkType.None,
+                Work = ECS_WorkerFragment.WorkType.Vagabond,
                 IsWorking = false
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
             {
-                Position = random.NextFloat3()
+                Position = new float3(0,0,0) 
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_Velocity
             {
-                Value = 5
+                Value = 10
             });
 
             CommandBuffer.AddComponent(index, entity, new ECS_Frag_TargetPosition
             {
-                Position = random.NextFloat3()
+                Position = new float3(x,y,z)
             });
         }
     }
