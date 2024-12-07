@@ -5,11 +5,11 @@ public struct ECS_WorkerFragment : IComponentData
 {
     public enum WorkType
     {
-        FoodHarvester = 1,
-        Tiberman = 2,
-        Miner = 3,
-        Mason = 4,
-        Vagabond = 5
+        FoodHarvester = 0,
+        Tiberman = 1,
+        Miner = 2,
+        Mason = 3,
+        Vagabond = 4
     }
 
     public WorkType Work;
