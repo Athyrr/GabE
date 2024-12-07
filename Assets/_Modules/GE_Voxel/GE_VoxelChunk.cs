@@ -133,7 +133,7 @@ using Vector2 = System.Numerics.Vector2;
                     {
                         Mesh cubeMesh = RenderCube(Vector3.zero, GetNeighborsWithChunks(i, j, k, nValue));
                         instances[index].mesh = cubeMesh;
-                        instances[index].transform = Matrix4x4.Translate(new Vector3(i * _cubeSize, nValue-k,j * _cubeSize) + _chunkPosition);
+                        instances[index].transform = Matrix4x4.Translate(new Vector3(i - _chunkSize / 2, nValue-k,j - _chunkSize / 2));
                         
                         cubeMesh.RecalculateNormals();
                         cubeMesh.RecalculateBounds();
@@ -255,8 +255,8 @@ using Vector2 = System.Numerics.Vector2;
 
         public void SpawnOnBlock(float3 p, GameObject mesh)
         {
-            GameObject _previewMesh;
-            _previewMesh = Instantiate(mesh, p, Quaternion.Euler(-90,0,0));
+            //GameObject _previewMesh;
+            //_previewMesh = Instantiate(mesh, p, Quaternion.Euler(-90,0,0));
         }
         
         public void UpdateLOD(float cubeSize)

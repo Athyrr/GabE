@@ -30,7 +30,6 @@ namespace _Modules.GE_Voxel
             if (!_playerCamera)
                 throw new Exception("No player camera available");
             
-            float offset = 1 + chunkOffset;
             _chunks = new GE_VoxelChunk[chunkLoop*chunkLoop];
             
             enabled = false;
@@ -39,7 +38,8 @@ namespace _Modules.GE_Voxel
             {
                 for (byte j = 0; j < chunkLoop; j++)
                 {
-                    Vector3 p = new Vector3(chunkSize*i*0.5f+offset - chunkLoop * chunkSize *0.25f,0,chunkSize*j*0.5f+offset - chunkLoop * chunkSize *0.25f);
+                    Vector3 p = new Vector3(chunkSize*i - chunkLoop * chunkSize / 2 + chunkSize / 2,0, chunkSize * j - chunkLoop * chunkSize / 2 + chunkSize / 2);
+
                     GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1, yMax, material, foliageMesh);
                     
                     e.Load();

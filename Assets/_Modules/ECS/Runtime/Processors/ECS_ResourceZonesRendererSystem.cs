@@ -21,7 +21,7 @@ public partial class ECS_ResourceZonesRendererSystem : SystemBase
     {
         foodZoneMaterial = Resources.Load<Material>("ResourceZones/Materials/MT_ResourcesZone_Food");
         var foodZonePrefab = Resources.Load<GameObject>("ResourceZones/Meshes/MSH_ResourceZone_Food");
-        foodZoneMesh = foodZonePrefab.GetComponent<MeshFilter>()?.sharedMesh;
+        foodZoneMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
 
         if (foodZoneMaterial == null || foodZoneMesh == null)
             Debug.LogError("food material or mesh not found!");

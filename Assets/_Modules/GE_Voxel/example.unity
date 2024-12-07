@@ -331,15 +331,12 @@ MonoBehaviour:
   _targetPoint: {x: 0, y: 0, z: 0}
   _initialDistance: 10
   _minDistance: 2
-  _maxDistance: 120
-  _scrollSpeed: 4
-  _orbitSpeed: 100
-  _smoothTime: 0.4
-  _stepAngle: 0
-  _WASDSpeed: 30
-  _debugPrefab: {fileID: 919132149155446097, guid: d1fd5a1b7b1ace240b2d702d7fd84058,
-    type: 3}
-  _voxelRunner: {fileID: 569413888}
+  _maxDistance: 20
+  _scrollSpeed: 5
+  _orbitSpeed: 5
+  _smoothTime: 0.2
+  _stepAngle: 1
+  _WASDSpeed: 1
 --- !u!1 &1715901858
 GameObject:
   m_ObjectHideFlags: 0
