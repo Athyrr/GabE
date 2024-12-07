@@ -2,6 +2,7 @@ using System;
 using _Modules.GE_Voxel.Utils;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
@@ -9,23 +10,23 @@ using Matrix4x4 = UnityEngine.Matrix4x4;
 using Random = UnityEngine.Random;
 using Vector2 = System.Numerics.Vector2;
 
-namespace _Modules.GE_Voxel
-{
-    public class GE_VoxelChunk
+    public class GE_VoxelChunk:MonoBehaviour
     {
         private byte _chunkSize = 15;
         private byte _initChunkSize = 15;
         private float _cubeSize = 1f;
         private byte _yMax;
+        private GameObject _foliageMesh;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private GameObject _gameObject;
         private Material _Material;
         
         private Vector3 _chunkPosition;
-        private NativeArray<byte> _nchunk;
+        public NativeArray<byte> _nchunk;
+        public byte[] _nchunkQuiFonctionne;
         
-        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material)
+        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material, GameObject foliageMesh)
         {
             _gameObject = GO;
             _cubeSize = cubeSize;
@@ -35,6 +36,7 @@ namespace _Modules.GE_Voxel
             _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.TempJob);
             _chunkPosition = chunkPosition;
             _Material = material;
+            _foliageMesh = foliageMesh;
             
             MeshRenderer _meshRenderer = _gameObject.GetComponent<MeshRenderer>();
             if (_meshRenderer == null)
@@ -73,7 +75,7 @@ namespace _Modules.GE_Voxel
                         float noiseValue;
                         VoronoiseBurst(out noiseValue, p, pHeight.x, pHeight.y);
                         
-                        float maxY = Mathf.Clamp((noiseValue * yMax)+1, 0, yMax); // Scale and clamp the noise value
+                        float maxY = math.clamp((noiseValue * yMax)+1, 0, yMax); // Scale and clamp the noise value
                 
                         nchunk[i + chunkSize*j] = (byte)(maxY);
                     }
@@ -135,6 +137,15 @@ namespace _Modules.GE_Voxel
                         
                         cubeMesh.RecalculateNormals();
                         cubeMesh.RecalculateBounds();
+
+
+                        if (k == nValue-1)
+                        {
+                            SpawnOnBlock(new Vector3(i * _cubeSize, nValue - k+2, j * _cubeSize) + _chunkPosition,
+                                _foliageMesh);
+                        }
+                        
+                        
                         ++index;
                     }
                 }
@@ -156,6 +167,13 @@ namespace _Modules.GE_Voxel
                 nchunk = _nchunk,
             };
             job.Schedule().Complete();
+
+            _nchunkQuiFonctionne = new byte[_nchunk.Length];
+            
+            for (int i = 0; i < _nchunk.Length; i++)
+            {   
+                _nchunkQuiFonctionne[i] = _nchunk[i];
+            }
             
             LoadMesh();
             _gameObject.transform.position = _chunkPosition;
@@ -234,6 +252,13 @@ namespace _Modules.GE_Voxel
 
             return mesh;
         }
+
+        public void SpawnOnBlock(float3 p, GameObject mesh)
+        {
+            GameObject _previewMesh;
+            _previewMesh = Instantiate(mesh, p, Quaternion.Euler(-90,0,0));
+        }
+        
         public void UpdateLOD(float cubeSize)
         {
             // step 1: clear all cube in this chunk
@@ -259,4 +284,3 @@ namespace _Modules.GE_Voxel
         }
 
     }
-}

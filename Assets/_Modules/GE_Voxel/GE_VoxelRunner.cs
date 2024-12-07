@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using _Modules.GE_Voxel.Utils;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -17,13 +18,14 @@ namespace _Modules.GE_Voxel
         public byte chunkOffset;
         public byte chunkLoop;
         public Material material;
-        private GE_VoxelChunk[] _chunks;
+        public GE_VoxelChunk[] _chunks;
         public Camera _playerCamera;
+        public GameObject foliageMesh;
         public bool debug = false;
 
         private float _lastCameraPositionValue; // x + z
         
-        private IEnumerator Start()
+        private void Start()
         {
             if (!_playerCamera)
                 throw new Exception("No player camera available");
@@ -32,39 +34,34 @@ namespace _Modules.GE_Voxel
             _chunks = new GE_VoxelChunk[chunkLoop*chunkLoop];
             
             enabled = false;
-            yield return new WaitForSeconds( 1f ); // to avoid a stranglehold
             
             for (byte i = 0; i < chunkLoop; i++)
             {
                 for (byte j = 0; j < chunkLoop; j++)
                 {
                     Vector3 p = new Vector3(chunkSize*i*0.5f+offset - chunkLoop * chunkSize *0.25f,0,chunkSize*j*0.5f+offset - chunkLoop * chunkSize *0.25f);
-                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1, yMax, material);
+                    GE_VoxelChunk e = new GE_VoxelChunk(new GameObject(), p, chunkSize, 1, yMax, material, foliageMesh);
                     
                     e.Load();
                     _chunks[i + j * chunkLoop] = e;
-                    yield return new WaitForSeconds( 0.005f );
                 } 
             }
             foreach (var e in _chunks)
             {
-                yield return new WaitForSeconds( 0.005f );
                 e.UpdateLOD(2);
             }
             foreach (var e in _chunks)
             {
-                yield return new WaitForSeconds( 0.005f );
                 e.UpdateLOD(4);
             }
             foreach (var e in _chunks)
             {
-                yield return new WaitForSeconds( 0.005f );
                 e.UpdateLOD(1);
             }
             
             
             enabled = true;
-            InvokeRepeating("GE_Update",0.5f,0.5f);
+            //InvokeRepeating("GE_Update",0.5f,0.5f);
         }
         
         private void Update()
@@ -76,10 +73,10 @@ namespace _Modules.GE_Voxel
                         int x = i % chunkLoop;
                         int y = (int)math.floor(i / chunkLoop); // because chunkSize cannot be 0
                         Vector3 chunkPos = new Vector3(
-                            x + x * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.25f,
+                            x + x * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.5f,
                             0f,
-                            y + y * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.25f);
-                        DrawBox(
+                            y + y * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.5f);
+                        GE_Debug.DrawBox(
                             chunkPos,
                             Quaternion.identity,
                             new Vector3(chunkSize, yMax, chunkSize),
@@ -116,51 +113,5 @@ namespace _Modules.GE_Voxel
             }
         }
         
-        public void DrawBox(Vector3 pos, Quaternion rot, Vector3 scale, Color c)
-        {
-            // create matrix
-            Matrix4x4 m = new Matrix4x4();
-            m.SetTRS(pos, rot, scale);
-
-            var point1 = m.MultiplyPoint(new Vector3(-0.5f, -0.5f, 0.5f));
-            var point2 = m.MultiplyPoint(new Vector3(0.5f, -0.5f, 0.5f));
-            var point3 = m.MultiplyPoint(new Vector3(0.5f, -0.5f, -0.5f));
-            var point4 = m.MultiplyPoint(new Vector3(-0.5f, -0.5f, -0.5f));
-
-            var point5 = m.MultiplyPoint(new Vector3(-0.5f, 0.5f, 0.5f));
-            var point6 = m.MultiplyPoint(new Vector3(0.5f, 0.5f, 0.5f));
-            var point7 = m.MultiplyPoint(new Vector3(0.5f, 0.5f, -0.5f));
-            var point8 = m.MultiplyPoint(new Vector3(-0.5f, 0.5f, -0.5f));
-
-            Debug.DrawLine(point1, point2, c);
-            Debug.DrawLine(point2, point3, c);
-            Debug.DrawLine(point3, point4, c);
-            Debug.DrawLine(point4, point1, c);
-
-            Debug.DrawLine(point5, point6, c);
-            Debug.DrawLine(point6, point7, c);
-            Debug.DrawLine(point7, point8, c);
-            Debug.DrawLine(point8, point5, c);
-
-            Debug.DrawLine(point1, point5, c);
-            Debug.DrawLine(point2, point6, c);
-            Debug.DrawLine(point3, point7, c);
-            Debug.DrawLine(point4, point8, c);
-
-            Vector3 forward;
-            forward.x = m.m02;
-            forward.y = m.m12;
-            forward.z = m.m22;
-
-            Vector3 upwards;
-            upwards.x = m.m01;
-            upwards.y = m.m11;
-            upwards.z = m.m21;
-            
-            // optional axis display
-            Debug.DrawRay(m.GetPosition(), forward, Color.magenta);
-            Debug.DrawRay(m.GetPosition(), upwards, Color.yellow);
-            //Debug.DrawRay(m.GetPosition(), m.GetRight(), Color.red);
-        }
     }
 }

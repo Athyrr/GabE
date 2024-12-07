@@ -55,5 +55,52 @@ namespace _Modules.GE_Voxel.Utils
             
             return a.X/a.Y;
         }
+
+
+        public static bool IsRayIntersectingAABB(float3 rayOrigin, float3 rayDirection, float3 boxCenter, float3 boxSize)
+        {
+            float3 boxHalfSize = boxSize * 0.5f;
+
+            float3 boxMin = boxCenter - boxHalfSize;
+            float3 boxMax = boxCenter + boxHalfSize;
+
+            float tmin = float.MinValue;
+            float tmax = float.MaxValue;
+
+            // Vérifier chaque dimension
+            for (int i = 0; i < 3; i++)
+            {
+                if (rayDirection[i] == 0) // Rayon parallèle à cet axe
+                {
+                    if (rayOrigin[i] < boxMin[i] || rayOrigin[i] > boxMax[i])
+                        return false; // Le rayon est en dehors de la boîte
+                }
+                else
+                {
+                    float t1 = (boxMin[i] - rayOrigin[i]) / rayDirection[i];
+                    float t2 = (boxMax[i] - rayOrigin[i]) / rayDirection[i];
+
+                    if (t1 > t2) Swap(ref t1, ref t2);
+
+                    tmin = Mathf.Max(tmin, t1);
+                    tmax = Mathf.Min(tmax, t2);
+
+                    if (tmin > tmax)
+                        return false;
+                }
+            }
+
+            // Si nécessaire, exclure les intersections derrière l'origine du rayon
+            return tmin >= 0;
+        }
+
+// Méthode d'échange pour t1 et t2
+        static void Swap(ref float a, ref float b)
+        {
+            float temp = a;
+            a = b;
+            b = temp;
+        }
+
     }
 }

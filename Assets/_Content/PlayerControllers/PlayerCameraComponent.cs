@@ -1,4 +1,10 @@
+using System;
+using _Modules.GE_Voxel;
+using _Modules.GE_Voxel.Utils;
+using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
+using float3 = Unity.Mathematics.float3;
 
 /// <summary>
 /// Allows the camera to orbit around a target transform and move using WASD keys.
@@ -54,6 +60,15 @@ public class PlayerCameraComponent : MonoBehaviour
     [Min(0)]
     [Tooltip("The speed at which the camera moves with WASD.")]
     private float _WASDSpeed = 1f;
+    
+    // TODO : Delete this or clean
+    [SerializeField]
+    [Tooltip("Prefab to debug when we click")]
+    private GameObject _debugPrefab;
+
+    [SerializeField]
+    [Tooltip("Prefab to debug when we click")]
+    private GE_VoxelRunner _voxelRunner;
 
     private float _targetDistance;
     private float _currentVerticalAngle = 30f;
@@ -61,13 +76,33 @@ public class PlayerCameraComponent : MonoBehaviour
     private float _currentHorizontalAngle = 0f;
     private float _targetHorizontalAngle;
     private Vector3 _currentTargetPosition;
-
+    private GameObject _previewMesh;
+    private byte _chunkLoop;
+    private byte _chunkSize;
+    private byte _yMax;
+    
     void Start()
     {
         _currentTargetPosition = _target != null ? _target.position : _targetPoint;
         _targetDistance = _initialDistance;
         _targetVerticalAngle = _currentVerticalAngle;
         _targetHorizontalAngle = _currentHorizontalAngle;
+
+        /*
+         * Init value
+         */
+        if (!_voxelRunner) throw new Exception("any voxelRunner sending");
+        
+        _chunkLoop = _voxelRunner.chunkLoop;
+        _chunkSize = _voxelRunner.chunkSize;
+        _yMax = _voxelRunner.yMax;
+        
+        /*
+         * Setup curser preview location
+         */
+        Vector3 position = new Vector3(0, 5, 0);
+        _previewMesh = Instantiate(_debugPrefab, position, Quaternion.identity);
+        //_previewMesh.transform.parent = this.transform;    
     }
 
     void LateUpdate()
@@ -135,6 +170,146 @@ public class PlayerCameraComponent : MonoBehaviour
 
         Quaternion targetRotation = Quaternion.LookRotation(_currentTargetPosition - transform.position);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, _smoothTime);
+        
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        
+        Vector3 p = ray.GetPoint(145f);
+        Debug.DrawLine(
+                transform.position,
+                p,
+                Color.red,
+                0.5f
+            );
+        
+        /*float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
+        float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
+        
+        // draw plane when we move curvor
+        System.Numerics.Vector2 coord = new System.Numerics.Vector2((int)p.x, (int)p.y);
+        float noiseY = GE_Math.Voronoise(
+            coord, pHeight.x, pHeight.y
+        )+2;*/
+
+        var vc = _voxelRunner._chunks;
+        byte[] _allChunksIndexActivable;
+        byte _allChunksIndexLength = 0;
+        _allChunksIndexActivable = new byte[vc.Length];
+        
+        for (byte i = 0; i < _voxelRunner._chunks.Length; ++i)
+        {
+            int x = i % _chunkLoop;
+            int y = i / _chunkLoop;
+            Vector3 chunkPosition = new Vector3(
+                (x * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2,
+                3f,
+                (y * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2
+            );
+
+            bool isIntersecting = GE_Math.IsRayIntersectingAABB(
+                new float3(transform.position.x, transform.position.y, transform.position.z),
+                new float3(p.x, p.y, p.z),
+                new float3(chunkPosition.x, chunkPosition.y, chunkPosition.z),
+                new float3(_chunkSize, _yMax, _chunkSize)
+            );
+
+            if (!isIntersecting)
+            {
+                GE_Debug.DrawBox(
+                    chunkPosition,
+                    Quaternion.identity,
+                    new Vector3(_chunkSize, _yMax, _chunkSize),
+                    Color.black
+                );
+            } else 
+                _allChunksIndexActivable[_allChunksIndexLength++] = i;
+
+        }
+
+        Array.Resize(ref _allChunksIndexActivable, _allChunksIndexLength);
+
+        byte intersectDebugCount = 0;
+
+        foreach (byte chunkIndex in _allChunksIndexActivable)
+        {
+            int chunkX = chunkIndex % _chunkLoop;
+            int chunkY = chunkIndex / _chunkLoop;
+            Vector3 chunkPosition = new Vector3(
+                (chunkX * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f) + 2,
+                5f,
+                chunkY * _chunkSize + _chunkSize * 0.5f - _chunkLoop * _chunkSize * 0.5f + 2
+                
+            );
+
+            float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
+            float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
+
+            float2 offset = math.distance(new float2(_chunkLoop * 0.5f), new float2( chunkIndex * 0.1f, chunkIndex % 10));
+            for (byte x = 0; x < _chunkSize; ++x)
+            {
+                for (byte z = 0; z < _chunkSize; ++z)
+                {
+                    //System.Numerics.Vector2 ps = (new System.Numerics.Vector2(x* 1, z* 1) + new System.Numerics.Vector2(chunkPosition.x, chunkPosition.y)*2)*.1f;
+                    byte y = _voxelRunner._chunks[chunkIndex]._nchunkQuiFonctionne[x + _chunkSize * z];
+                    //float noiseValue = GE_Math.Voronoise(ps, pHeight.x, pHeight.y);
+                    //byte y = (byte)math.clamp((noiseValue * _yMax), 0, _yMax);
+                    
+                    Vector3 cubePosition = new Vector3(
+                        chunkPosition.x + x - (_chunkSize * 0.5f) + 0.5f,
+                        y+ 0.5f,
+                        chunkPosition.z + z - (_chunkSize * 0.5f) + 0.5f
+                    );
+
+                    bool isCubeIntersecting = GE_Math.IsRayIntersectingAABB(
+                        new float3(transform.position.x, transform.position.y, transform.position.z),
+                        new float3(p.x, p.y, p.z),
+                        new float3(cubePosition.x, cubePosition.y, cubePosition.z),
+                        new float3(1, 1, 1)
+                    );
+                    
+                    if (isCubeIntersecting)
+                    {
+
+                        _previewMesh.transform.position = cubePosition;
+                        GE_Debug.DrawBox(
+                            cubePosition,
+                            Quaternion.identity,
+                            new Vector3(1, 1, 1),
+                            Color.cyan
+                        );
+                        GE_Debug.DrawBox(
+                            transform.position,
+                            Quaternion.identity,
+                            new Vector3(6, 6, 6),
+                            Color.red
+                        );
+                        GE_Debug.DrawBox(
+                            cubePosition,
+                            Quaternion.identity,
+                            new Vector3(6, 6, 6),
+                            Color.red
+                        );
+                        intersectDebugCount++;
+                    }
+                    else
+                    {
+                        GE_Debug.DrawBox(
+                            cubePosition,
+                            Quaternion.identity,
+                            new Vector3(1, 1, 1),
+                            Color.grey
+                        );                        
+                    }
+                }
+            }
+
+            GE_Debug.DrawBox(
+                chunkPosition,
+                Quaternion.identity,
+                new Vector3(_chunkSize, _yMax, _chunkSize),
+                Color.green
+            );
+        }
+
     }
 
     /// <summary>
@@ -148,5 +323,46 @@ public class PlayerCameraComponent : MonoBehaviour
         {
             _targetPoint = transform.position + transform.forward * _initialDistance;
         }
+    }
+    
+    // Function to check if a ray intersects an AABB
+    private bool RayIntersectsBox(Ray ray, Bounds bounds)
+    {
+        float tMin = (bounds.min.x - ray.origin.x) / ray.direction.x;
+        float tMax = (bounds.max.x - ray.origin.x) / ray.direction.x;
+
+        if (tMin > tMax) Swap(ref tMin, ref tMax);
+
+        float tyMin = (bounds.min.y - ray.origin.y) / ray.direction.y;
+        float tyMax = (bounds.max.y - ray.origin.y) / ray.direction.y;
+
+        if (tyMin > tyMax) Swap(ref tyMin, ref tyMax);
+
+        if ((tMin > tyMax) || (tyMin > tMax))
+            return false;
+
+        if (tyMin > tMin)
+            tMin = tyMin;
+
+        if (tyMax < tMax)
+            tMax = tyMax;
+
+        float tzMin = (bounds.min.z - ray.origin.z) / ray.direction.z;
+        float tzMax = (bounds.max.z - ray.origin.z) / ray.direction.z;
+
+        if (tzMin > tzMax) Swap(ref tzMin, ref tzMax);
+
+        if ((tMin > tzMax) || (tzMin > tMax))
+            return false;
+
+        return true;
+    }
+
+    // Utility function to swap two values
+    private void Swap(ref float a, ref float b)
+    { // TODO : replace by swap with a,b = b,a
+        float temp = a;
+        a = b;
+        b = temp;
     }
 }

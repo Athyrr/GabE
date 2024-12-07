@@ -174,6 +174,8 @@ MonoBehaviour:
   material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
     type: 3}
   _playerCamera: {fileID: 1545421977}
+  foliageMesh: {fileID: -1550514412580984892, guid: ab3b70ac0db797a4c926ffbdc6ecb3ad,
+    type: 3}
   debug: 0
 --- !u!1 &1545421975
 GameObject:
@@ -333,10 +335,11 @@ MonoBehaviour:
   _scrollSpeed: 4
   _orbitSpeed: 100
   _smoothTime: 0.4
-  _stepAngle: 1
-  _WASDSpeed: 10
+  _stepAngle: 0
+  _WASDSpeed: 30
   _debugPrefab: {fileID: 919132149155446097, guid: d1fd5a1b7b1ace240b2d702d7fd84058,
     type: 3}
+  _voxelRunner: {fileID: 569413888}
 --- !u!1 &1715901858
 GameObject:
   m_ObjectHideFlags: 0
