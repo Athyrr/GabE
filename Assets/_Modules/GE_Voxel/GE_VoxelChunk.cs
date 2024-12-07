@@ -1,35 +1,42 @@
 using System;
 using _Modules.GE_Voxel.Utils;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using Matrix4x4 = UnityEngine.Matrix4x4;
 using Random = UnityEngine.Random;
 using Vector2 = System.Numerics.Vector2;
 
-namespace _Modules.GE_Voxel
-{
-    public class GE_VoxelChunk
+    public class GE_VoxelChunk:MonoBehaviour
     {
         private byte _chunkSize = 15;
+        private byte _initChunkSize = 15;
         private float _cubeSize = 1f;
         private byte _yMax;
+        private GameObject _foliageMesh;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private GameObject _gameObject;
         private Material _Material;
         
         private Vector3 _chunkPosition;
-        private byte[] _nchunk;
+        public NativeArray<byte> _nchunk;
+        public byte[] _nchunkQuiFonctionne;
         
-        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material)
+        public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material, GameObject foliageMesh)
         {
             _gameObject = GO;
             _cubeSize = cubeSize;
             _chunkSize = (byte)(chunkSize / _cubeSize);
+            _initChunkSize = (byte)(chunkSize / _cubeSize);
             _yMax = yMax;
-            _nchunk = new byte[_chunkSize * _chunkSize];
+            _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.TempJob);
             _chunkPosition = chunkPosition;
             _Material = material;
+            _foliageMesh = foliageMesh;
             
             MeshRenderer _meshRenderer = _gameObject.GetComponent<MeshRenderer>();
             if (_meshRenderer == null)
@@ -43,24 +50,73 @@ namespace _Modules.GE_Voxel
                 _meshFilter = _gameObject.AddComponent<MeshFilter>();
             
         }
-
-        public void LoadNoise()
+        
+        [BurstCompile(FloatMode = FloatMode.Fast, FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance, CompileSynchronously = true)]
+        private struct LoadNoise : IJob
         {
-            for (byte i = 0; i < _chunkSize; ++i)
+            [ReadOnly] public byte chunkSize; 
+            [ReadOnly] public float2 chunkPosition; 
+            [ReadOnly] public float cubeSize; 
+            [ReadOnly] public byte yMax; 
+            [WriteOnly] public NativeArray<byte> nchunk; 
+        
+            public void Execute()
             {
-                for (byte j = 0; j < _chunkSize; ++j)
+                for (byte i = 0; i < chunkSize; ++i)
                 {
-                    // Generate noise value for height 0.5 - 0.5 *cos( vec2(0.0,2.0) );
-                    Vector2 a = new Vector2((float)math.cos(0), (float)math.cos(2f));
-                    Vector2 pHeight = new Vector2(0.5f, 0.5f) - 0.5f * a;
-                    float noiseValue = GE_Math.Voronoise((new Vector2(i* _cubeSize, j* _cubeSize) + new Vector2(_chunkPosition.x, _chunkPosition.z)*2)*.1f , pHeight.X, pHeight.Y); 
-                    float maxY = Mathf.Clamp((noiseValue * _yMax)+1, 0, _yMax); // Scale and clamp the noise value
-                    
-                    _nchunk[i + _chunkSize*j] = (byte)(maxY);
+                    for (byte j = 0; j < chunkSize; ++j)
+                    {
+                        // Generate noise value for height 0.5 - 0.5 *cos( vec2(0.0,2.0) );
+                        float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
+                        float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
+                        
+                        float2 p = (new float2(i* cubeSize, j* cubeSize) + new float2(chunkPosition.x, chunkPosition.y)*2)*.1f;
+                        
+                        float noiseValue;
+                        VoronoiseBurst(out noiseValue, p, pHeight.x, pHeight.y);
+                        
+                        float maxY = math.clamp((noiseValue * yMax)+1, 0, yMax); // Scale and clamp the noise value
+                
+                        nchunk[i + chunkSize*j] = (byte)(maxY);
+                    }
                 }
             }
-        }
 
+            public void VoronoiseBurst(out float result, in float2 p, float u, float v)
+            {
+                float k = 1.0f + 63.0f * (float)math.pow(1.0-v,6.0);
+                float2 i = new float2((float)math.floor(p.x), (float)math.floor(p.y));
+                float2 f = new float2(math.frac(p.x), math.frac(p.y)); // place add frac with vec2 :(
+    
+                float2 a = new float2(0f,0f);
+                for( int y=-2; y<=2; y++ )
+                for( int x=-2; x<=2; x++ )
+                {
+                    float2  g = new float2( x, y );
+                    float3  o = hash3( i + g )*new float3(u,u,1.0f);
+                    float2  d = g - f + new float2(o.x,o.y);
+                    float w = math.pow( 1.0f - math.smoothstep(0.0f,1.414f, d.x*d.x + d.y*d.y), k); // (float)d.Length()),  => d.x*d.x + d.y*d.y
+                    a += new float2(o.z*w,w);
+                }
+        
+                result = a.x/a.y;
+            }
+            
+            public static float3 hash3( float2 p ) // check this for more details -> https://www.shadertoy.com/view/4fGcWd
+            {
+                float3 q = new float3( math.dot(p,new float2(127.1f,311.7f)), 
+                    math.dot(p,new float2(269.5f, 183.3f)), 
+                    math.dot(p,new float2(419.2f,371.9f)));
+
+                return new float3(
+                    math.frac(math.sin(q.x) * 43758.5453f),
+                    math.frac(math.sin(q.y) * 43758.5453f),
+                    math.frac(math.sin(q.z) * 43758.5453f)
+                );
+            }
+        }
+        
+        // TODO : add LoadMesh in IJob && BurstCompile
         public void LoadMesh()
         {
             Matrix4x4[] matrices;
@@ -79,19 +135,21 @@ namespace _Modules.GE_Voxel
                         instances[index].mesh = cubeMesh;
                         instances[index].transform = Matrix4x4.Translate(new Vector3(i * _cubeSize, nValue-k,j * _cubeSize) + _chunkPosition);
                         
-                        // Vector3 scale = Vector3.one;
-                        // Quaternion rotation = Quaternion.Euler(Random.Range(-180, 180), Random.Range(-180, 180), Random.Range(-180, 180));
-                        // var mat = Matrix4x4.TRS(new Vector3(i, nValue-k,j) + _chunkPosition, rotation, scale);
-                        // matrices[i] = mat;
                         cubeMesh.RecalculateNormals();
                         cubeMesh.RecalculateBounds();
+
+
+                        if (k == nValue-1)
+                        {
+                            SpawnOnBlock(new Vector3(i * _cubeSize, nValue - k+2, j * _cubeSize) + _chunkPosition,
+                                _foliageMesh);
+                        }
+                        
+                        
                         ++index;
                     }
                 }
             }
-
-            int range = 100;
-            
             Array.Resize(ref instances, index); // Resize the array to exclude unused instances
             combined.CombineMeshes(instances, true, true);
             _meshFilter.sharedMesh = combined;
@@ -99,7 +157,24 @@ namespace _Modules.GE_Voxel
 
         public void Load()
         {
-            LoadNoise();
+            //LoadNoise();
+            var job = new LoadNoise()
+            {
+                chunkSize = _chunkSize,
+                chunkPosition = new float2(_chunkPosition.x, _chunkPosition.z),
+                cubeSize = _cubeSize,
+                yMax = _yMax,
+                nchunk = _nchunk,
+            };
+            job.Schedule().Complete();
+
+            _nchunkQuiFonctionne = new byte[_nchunk.Length];
+            
+            for (int i = 0; i < _nchunk.Length; i++)
+            {   
+                _nchunkQuiFonctionne[i] = _nchunk[i];
+            }
+            
             LoadMesh();
             _gameObject.transform.position = _chunkPosition;
             _gameObject.name = "Chunk " + _chunkPosition.x + ", " + _chunkPosition.z;
@@ -177,5 +252,35 @@ namespace _Modules.GE_Voxel
 
             return mesh;
         }
+
+        public void SpawnOnBlock(float3 p, GameObject mesh)
+        {
+            GameObject _previewMesh;
+            _previewMesh = Instantiate(mesh, p, Quaternion.Euler(-90,0,0));
+        }
+        
+        public void UpdateLOD(float cubeSize)
+        {
+            // step 1: clear all cube in this chunk
+            /*for (byte i = 0; i < _chunkSize; ++i)
+            {
+                for (byte j = 0; j < _chunkSize; ++j)
+                {
+                    _nchunk[i + _chunkSize*j] = 0;
+                }
+            }*/
+            
+            // step 2: replace allocated memory
+            _cubeSize = cubeSize;
+            _chunkSize = (byte)(_initChunkSize / _cubeSize);
+            
+            _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.TempJob);
+            
+            // step 3: recalculate noise
+            //LoadNoise();
+            
+            // step 4: redraw all cube
+            //LoadMesh();
+        }
+
     }
-}

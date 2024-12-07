@@ -4,7 +4,8 @@ using Unity.Entities;
 
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
-partial struct ECS_StaminaManagerSystem : ISystem
+
+partial struct NewISystemScript : ISystem
 {
     public int _currentDay;
 
