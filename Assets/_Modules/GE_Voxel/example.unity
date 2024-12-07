@@ -325,8 +325,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4918a33f24240e4faa646c8002281a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1
-  rotationSpeed: 2
+  _target: {fileID: 0}
+  _targetPoint: {x: 0, y: 0, z: 0}
+  _initialDistance: 10
+  _minDistance: 2
+  _maxDistance: 20
+  _scrollSpeed: 5
+  _orbitSpeed: 5
+  _smoothTime: 0.2
+  _stepAngle: 1
+  _WASDSpeed: 1
 --- !u!1 &1715901858
 GameObject:
   m_ObjectHideFlags: 0
