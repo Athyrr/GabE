@@ -1,6 +1,3 @@
 using Unity.Entities;
 
-public struct ECS_FlowFieldEntityRequestTag : IComponentData
-{
-    
-}
+public struct ECS_FlowFieldEntityRequestTag : IComponentData { }

@@ -38,22 +38,22 @@ public partial class ECS_PersonRendererSystem : SystemBase
 
 #if DEBUG
 
-        for (int i = 0; i < _workersMaterials.Length; i++)
-        {
-            if (_workersMaterials[i] == null)
-            {
-                Debug.LogError($"Material at index {i} is null. Check the resource path!");
-            }
-        }
+        //for (int i = 0; i < _workersMaterials.Length; i++)
+        //{
+        //    if (_workersMaterials[i] == null)
+        //    {
+        //        Debug.LogError($"Material at index {i} is null. Check the resource path!");
+        //    }
+        //}
 
-        Debug.Log($"Loaded Mesh: {_lodMeshes[0]?.name}");
-        for (int i = 0; i < _workersMaterials.Length; i++)
-        {
-            if (_workersMaterials[i] != null)
-                Debug.Log($"Loaded Material {i}: {_workersMaterials[i].name}");
-            else
-                Debug.LogError($"Material {i} failed to load.");
-        }
+        //Debug.Log($"Loaded Mesh: {_lodMeshes[0]?.name}");
+        //for (int i = 0; i < _workersMaterials.Length; i++)
+        //{
+        //    if (_workersMaterials[i] != null)
+        //        Debug.Log($"Loaded Material {i}: {_workersMaterials[i].name}");
+        //    else
+        //        Debug.LogError($"Material {i} failed to load.");
+        //}
 
         //if (_mainCamera == null)
         //    Debug.LogError("Main Camera not found!");
@@ -97,15 +97,11 @@ public partial class ECS_PersonRendererSystem : SystemBase
                 Mesh renderedMesh = _lodMeshes[lodLevel];
                 Material renderedMaterial = _workersMaterials[materialID];
 
-
-
                 if (renderedMesh == null || renderedMaterial == null)
                 {
                     Debug.LogWarning($"Mesh or Material is null. LOD: {lodLevel}, Material ID: {materialID}");
                     continue;
                 }
-
-
 
                 Graphics.DrawMeshInstanced(renderedMesh, 0, renderedMaterial, matrices.ToArray());
             }
