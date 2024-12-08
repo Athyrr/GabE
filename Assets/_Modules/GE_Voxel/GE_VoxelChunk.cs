@@ -10,7 +10,7 @@ using Matrix4x4 = UnityEngine.Matrix4x4;
 using Random = UnityEngine.Random;
 using Vector2 = System.Numerics.Vector2;
 
-    public class GE_VoxelChunk:MonoBehaviour
+    public class GE_VoxelChunk
     {
         private byte _chunkSize = 15;
         private byte _initChunkSize = 15;
@@ -70,7 +70,7 @@ using Vector2 = System.Numerics.Vector2;
                         float2 a = new float2((float)math.cos(0), (float)math.cos(2f));
                         float2 pHeight = new float2(0.5f, 0.5f) - 0.5f * a;
                         
-                        float2 p = (new float2(i* cubeSize, j* cubeSize) + new float2(chunkPosition.x, chunkPosition.y)*2)*.1f;
+                        float2 p = (new float2(i * cubeSize, j * cubeSize) + new float2(chunkPosition.x, chunkPosition.y))*.1f;
                         
                         float noiseValue;
                         VoronoiseBurst(out noiseValue, p, pHeight.x, pHeight.y);
@@ -185,17 +185,17 @@ using Vector2 = System.Numerics.Vector2;
             return new bool[]
             {
                 // Check Right Neighbor
-                !(i + 1 < _chunkSize && _nchunk[(i + 1) + _chunkSize * j] < nValue),
+                !((i + 1 < _chunkSize && _nchunk[(i + 1) + _chunkSize * j] < nValue) || i + 1 == _chunkSize),
                 // Check Left Neighbor
-                !(i - 1 >= 0 && _nchunk[(i - 1) + _chunkSize * j] < nValue),
+                !((i - 1 >= 0 && _nchunk[(i - 1) + _chunkSize * j] < nValue) || i - 1 == 0),
                 // Check Top Neighbor
                 (k - 1 >= 0 && nValue > 0),
                 // Check Bottom Neighbor
                 true, // never see this face
                 // Check Front Neighbor
-                !(j + 1 < _chunkSize && _nchunk[i + _chunkSize * (j + 1)] < nValue),
+                !((j + 1 < _chunkSize && _nchunk[i + _chunkSize * (j + 1)] < nValue) || j + 1 == _chunkSize),
                 // Check Back Neighbor
-                !(j - 1 >= 0 && _nchunk[i + _chunkSize * (j - 1)] < nValue)
+                !((j - 1 >= 0 && _nchunk[i + _chunkSize * (j - 1)] < nValue) || j - 1 == 0)
             };
         }
 
