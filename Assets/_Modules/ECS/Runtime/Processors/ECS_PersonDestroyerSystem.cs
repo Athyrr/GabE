@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 [BurstCompile]
-//[DisableAutoCreation]
+[DisableAutoCreation]
 public partial struct ECS_Processor_PersonDestroyer : ISystem
 {
     /// <summary>
