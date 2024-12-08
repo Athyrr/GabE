@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Scenes/SC_Menu.unity
     guid: e6cff97674d761d498fee9dea55a9f36
+  - enabled: 1
+    path: Assets/_Modules/GE_Voxel/example.unity
+    guid: 6290964117b4f9040bad4eff09f89273
   m_configObjects: {}

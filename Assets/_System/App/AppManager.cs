@@ -32,7 +32,7 @@ namespace GabE.Game
         public static AppManager Instance;
 
         private const string _mainMenuSceneName = "SC_Menu";
-        private const string _gameSceneName = "SC_Game";
+        private const string _gameSceneName = "example"; //@todo exemple scene to change with real scene
 
         /// <summary>
         /// The current <see cref="AppState"/>.

@@ -651,6 +651,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   _createBuildingButton: {fileID: 599385227}
   _buildingType: 3
   _position:
@@ -964,6 +965,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   _createBuildingButton: {fileID: 1049863637}
   _buildingType: 1
   _position:
@@ -1750,13 +1752,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1545421975}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
+  m_LocalPosition: {x: 0, y: 50, z: -50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
 --- !u!114 &1545421979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1813,6 +1815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4918a33f24240e4faa646c8002281a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _initialPosition: {x: 0, y: 50, z: -50}
   _target: {fileID: 0}
   _targetPoint: {x: 0, y: 0, z: 0}
   _initialDistance: 10
@@ -1998,6 +2001,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   _createBuildingButton: {fileID: 1840322369}
   _buildingType: 2
   _position:
@@ -2138,6 +2142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   _createBuildingButton: {fileID: 1959026798}
   _buildingType: 0
   _position:
@@ -2346,6 +2351,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   _createBuildingButton: {fileID: 2097733899}
   _buildingType: 4
   _position:
@@ -2440,7 +2446,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1715901861}
   - {fileID: 569413887}
-  - {fileID: 1545421978}
   - {fileID: 570312617}
   - {fileID: 1991595097}
   - {fileID: 1462078107}

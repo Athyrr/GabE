@@ -2,10 +2,32 @@ using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
+using UnityEngine;
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_BuildingBuilderSystem : ISystem
 {
+    //[BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        var e = state.EntityManager.CreateEntity(typeof(ECS_PositionFragment), typeof(ECS_BuildingFragment));
+        state.EntityManager.SetComponentData(e, new ECS_PositionFragment
+        {
+            Position = new float3(0f, 0f, 0f)
+        });
+
+        state.EntityManager.SetComponentData(e, new ECS_BuildingFragment
+        {
+            Type = BuildingType.School,
+            Capacicty = 100,
+            Occupants = 0
+        });
+
+        Debug.LogWarning("Create school");
+    }
+
+
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
