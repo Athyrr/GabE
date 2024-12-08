@@ -1,55 +1,53 @@
 using GabE.Module.ECS;
-using Unity.Burst.Intrinsics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using System;
+using Unity.Burst.Intrinsics;
 
-[BurstCompile]
-[UpdateInGroup(typeof(ECS_Group_ResourceManagement))]
+[UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_StorageManagerSystem : ISystem
 {
     private Entity _storageEntity;
-    private EntityQuery _workerQuery;
     private ECS_PositionFragment _storagePosition;
-    private NativeList<ECS_ResourceStorageFragment> _globalStorage;
+    private EntityQuery _workerQuery;
     private int _lastProcessedDay;
 
-    // Declare ComponentTypeHandles
+    private NativeArray<ECS_ResourceStorageFragment> _globalStorage;
+
+    // Handles for components
     private ComponentTypeHandle<ECS_WorkerFragment> _workerHandle;
     private ComponentTypeHandle<ECS_PositionFragment> _positionHandle;
 
     public void OnCreate(ref SystemState state)
     {
+        // Create or retrieve the storage entity
         if (!SystemAPI.HasSingleton<ECS_ResourceStorageFragment>())
         {
-            Debug.Log("Create new storage");
             var entity = state.EntityManager.CreateEntity();
+            state.EntityManager.AddComponentData(entity, new ECS_PositionFragment { Position = new float3(0, 0, 15) });
 
-            state.EntityManager.AddComponent<ECS_PositionFragment>(entity);
-            state.EntityManager.SetComponentData<ECS_PositionFragment>(entity, new ECS_PositionFragment() { Position = new float3(0, 0, z: 15) });
+            _globalStorage = new NativeArray<ECS_ResourceStorageFragment>(3, Allocator.Persistent);
+            _globalStorage[0] = new ECS_ResourceStorageFragment { Type = ResourceType.Wood, Quantity = 10 };
+            _globalStorage[1] = new ECS_ResourceStorageFragment { Type = ResourceType.Stone, Quantity = 0 };
+            _globalStorage[2] = new ECS_ResourceStorageFragment { Type = ResourceType.Food, Quantity = 0 };
 
-            DynamicBuffer<ECS_ResourceStorageFragment> buffer = state.EntityManager.AddBuffer<ECS_ResourceStorageFragment>(entity);
-            //@todo set initial resources in asset to read
-            buffer.Add(new ECS_ResourceStorageFragment { Type = ResourceType.Wood, Quantity = 10 });
-            buffer.Add(new ECS_ResourceStorageFragment { Type = ResourceType.Stone, Quantity = 0 });
-            buffer.Add(new ECS_ResourceStorageFragment { Type = ResourceType.Food, Quantity = 0 });
+            state.EntityManager.AddComponentData(entity, new ECS_ResourceStorageFragment { Type = ResourceType.Wood, Quantity = 10 });
         }
 
+        // Retrieve the storage entity
         _storageEntity = SystemAPI.GetSingletonEntity<ECS_ResourceStorageFragment>();
+        _storagePosition = state.EntityManager.GetComponentData<ECS_PositionFragment>(_storageEntity);
 
-        _globalStorage = new NativeList<ECS_ResourceStorageFragment>(1024 * 1024, Allocator.Persistent);
-
+        // Set up the worker query and component handles
         _workerQuery = state.GetEntityQuery(
             ComponentType.ReadOnly<ECS_WorkerFragment>(),
             ComponentType.ReadOnly<ECS_PositionFragment>()
         );
 
-        _storagePosition = state.EntityManager.GetComponentData<ECS_PositionFragment>(_storageEntity);
-
-        // Initialize type handles
         _workerHandle = state.GetComponentTypeHandle<ECS_WorkerFragment>(true);
         _positionHandle = state.GetComponentTypeHandle<ECS_PositionFragment>(true);
     }
@@ -57,45 +55,47 @@ public partial struct ECS_StorageManagerSystem : ISystem
     public void OnDestroy(ref SystemState state)
     {
         if (_globalStorage.IsCreated)
+        {
             _globalStorage.Dispose();
+        }
     }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        // Update the component type handles
-        _workerHandle.Update(ref state);
-        _positionHandle.Update(ref state);
+        //// Update component handles
+        //_workerHandle.Update(ref state);
+        //_positionHandle.Update(ref state);
 
-        var lifecycle = SystemAPI.GetSingleton<ECS_GlobalLifecyleFragment>();
-        int currentDay = lifecycle.DayCount;
+        //var lifecycle = SystemAPI.GetSingleton<ECS_GlobalLifecyleFragment>();
+        //int currentDay = lifecycle.DayCount;
 
-        var addResourceJob = new AddResourceJob
-        {
-            StoragePosition = _storagePosition.Position,
-            StorageBuffer = _globalStorage.AsParallelWriter(),
-            WorkerHandle = _workerHandle,
-            PositionHandle = _positionHandle
-        };
+        //// Collect resources from workers
+        //var addResourceJob = new AddResourceJob
+        //{
+        //    StoragePosition = _storagePosition.Position,
+        //    Storage = _globalStorage,
+        //    WorkerHandle = _workerHandle,
+        //    PositionHandle = _positionHandle
+        //};
+        //state.Dependency = addResourceJob.ScheduleParallel(_workerQuery, state.Dependency);
 
-        state.Dependency = addResourceJob.ScheduleParallel(_workerQuery, state.Dependency);
+        //// Consume resources once per day
+        //if (currentDay != _lastProcessedDay && currentDay > 0)
+        //{
+        //    _lastProcessedDay = currentDay;
 
-        if (currentDay != _lastProcessedDay && currentDay != 0)
-        {
-            _lastProcessedDay = currentDay;
+        //    var consumeResourceJob = new ConsumeResourceJob
+        //    {
+        //        ResourceType = ResourceType.Food,
+        //        Quantity = lifecycle.Population,
+        //        Storage = _globalStorage
+        //    };
+        //    state.Dependency = consumeResourceJob.Schedule(state.Dependency);
+        //}
 
-            var consumeResourceJob = new ConsumeResourceJob
-            {
-                ResourceType = ResourceType.Food,
-                Quantity = lifecycle.Population,
-                StorageBuffer = _globalStorage
-            };
+        //state.Dependency.Complete();
 
-            state.Dependency = consumeResourceJob.Schedule(state.Dependency);
-        }
-
-        state.Dependency.Complete();
-
+        //// Log the resource quantities
         //for (int i = 0; i < _globalStorage.Length; i++)
         //{
         //    var resource = _globalStorage[i];
@@ -103,59 +103,71 @@ public partial struct ECS_StorageManagerSystem : ISystem
         //}
     }
 
-    [BurstCompile]
     private struct AddResourceJob : IJobChunk
     {
         public float3 StoragePosition;
 
-        [NativeDisableParallelForRestriction]
-        public NativeList<ECS_ResourceStorageFragment>.ParallelWriter StorageBuffer;
+        public NativeArray<ECS_ResourceStorageFragment> Storage;
 
         [ReadOnly] public ComponentTypeHandle<ECS_WorkerFragment> WorkerHandle;
         [ReadOnly] public ComponentTypeHandle<ECS_PositionFragment> PositionHandle;
 
         public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
+            if (!chunk.Has(ref WorkerHandle) || !chunk.Has(ref PositionHandle))
+                return;
+
             var workers = chunk.GetNativeArray(ref WorkerHandle);
             var positions = chunk.GetNativeArray(ref PositionHandle);
 
+            // Iterate over the workers in the chunk
             for (int i = 0; i < chunk.Count; i++)
             {
                 var worker = workers[i];
                 var position = positions[i];
 
+                // Only process workers that have resources and are close to storage
                 if (worker.HoldResourcesAmount <= 0 || math.distance(position.Position, StoragePosition) > 1.0f)
                     continue;
 
-                StorageBuffer.AddNoResize(new ECS_ResourceStorageFragment
+                // Iterate through the storage array to find the correct resource type
+                for (int j = 0; j < Storage.Length; j++)
                 {
-                    Type = worker.GetResourceType(worker.Work),
-                    Quantity = worker.HoldResourcesAmount
-                });
+                    if (Storage[j].Type == worker.GetResourceType(worker.Work))
+                    {
+                        // Add the worker's resource to the storage quantity
+                        Storage[j] = new ECS_ResourceStorageFragment
+                        {
+                            Type = Storage[j].Type,
+                            Quantity = Storage[j].Quantity + worker.HoldResourcesAmount
+                        };
+                        break;
+                    }
+                }
+
+                Debug.Assert(Enum.IsDefined(typeof(ResourceType), worker.GetResourceType(worker.Work)), "Invalid ResourceType detected.");
             }
         }
     }
 
-    [BurstCompile]
     private struct ConsumeResourceJob : IJob
     {
         public ResourceType ResourceType;
         public int Quantity;
 
-        [NativeDisableParallelForRestriction]
-        public NativeList<ECS_ResourceStorageFragment> StorageBuffer;
+        public NativeArray<ECS_ResourceStorageFragment> Storage;
 
         public void Execute()
         {
-            for (int i = 0; i < StorageBuffer.Length; i++)
+            for (int i = 0; i < Storage.Length; i++)
             {
-                if (StorageBuffer[i].Type != ResourceType)
+                if (Storage[i].Type != ResourceType)
                     continue;
 
-                StorageBuffer[i] = new ECS_ResourceStorageFragment
+                Storage[i] = new ECS_ResourceStorageFragment
                 {
-                    Type = StorageBuffer[i].Type,
-                    Quantity = math.max(0, StorageBuffer[i].Quantity - Quantity)
+                    Type = Storage[i].Type,
+                    Quantity = math.max(0, Storage[i].Quantity - Quantity)
                 };
                 break;
             }
