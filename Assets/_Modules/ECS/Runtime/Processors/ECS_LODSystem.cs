@@ -22,7 +22,7 @@ public partial class ECS_LODSystem : SystemBase
 
     protected override void OnUpdate()
     {
-        Debug.Log("LOD system");
+        //Debug.Log("LOD system");
         //if (mainCamera == null) return;
 
         //@todo delete and get camrea

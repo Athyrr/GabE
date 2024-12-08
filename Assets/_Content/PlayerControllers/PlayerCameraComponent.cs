@@ -1,8 +1,6 @@
 using System;
 using _Modules.GE_Voxel;
 using _Modules.GE_Voxel.Utils;
-using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 using float3 = Unity.Mathematics.float3;
 
@@ -61,10 +59,13 @@ public class PlayerCameraComponent : MonoBehaviour
     [Tooltip("The speed at which the camera moves with WASD.")]
     private float _WASDSpeed = 1f;
     
-    // TODO : Delete this or clean
     [SerializeField]
-    [Tooltip("Prefab to debug when we click")]
-    private GameObject _debugPrefab;
+    [Tooltip("Mesh for preview the over")]
+    private GameObject _previewMesh;
+    
+    [SerializeField]
+    [Tooltip("material for _previewMesh")]
+    private Material _previewMeshMaterial;
 
     [SerializeField]
     [Tooltip("Prefab to debug when we click")]
@@ -76,7 +77,6 @@ public class PlayerCameraComponent : MonoBehaviour
     private float _currentHorizontalAngle = 0f;
     private float _targetHorizontalAngle;
     private Vector3 _currentTargetPosition;
-    private GameObject _previewMesh;
     private byte _chunkLoop;
     private byte _chunkSize;
     private byte _yMax;
@@ -98,11 +98,16 @@ public class PlayerCameraComponent : MonoBehaviour
         _yMax = _voxelRunner.yMax;
         
         /*
-         * Setup curser preview location
+         * Setup cursor preview location
          */
         Vector3 position = new Vector3(0, 5, 0);
-        _previewMesh = Instantiate(_debugPrefab, position, Quaternion.identity);
-        //_previewMesh.transform.parent = this.transform;    
+        _previewMesh = Instantiate(_previewMesh, position, Quaternion.identity);
+        Renderer renderer = _previewMesh.GetComponent<Renderer>();
+        if (renderer != null) {
+            renderer.material = _previewMeshMaterial;
+        }
+        else
+            Debug.LogError("Renderer not found on the instantiated object!");
     }
 
     void LateUpdate()
@@ -215,11 +220,9 @@ public class PlayerCameraComponent : MonoBehaviour
                 );
             } else 
                 _allChunksIndexActivable[_allChunksIndexLength++] = i;
-
         }
 
         Array.Resize(ref _allChunksIndexActivable, _allChunksIndexLength);
-
         byte intersectDebugCount = 0;
 
         foreach (byte chunkIndex in _allChunksIndexActivable)
@@ -232,19 +235,16 @@ public class PlayerCameraComponent : MonoBehaviour
                 _chunkSize * chunkY - _chunkLoop * _chunkSize / 2 + _chunkSize / 2
 
             );
-
+            //NativeArray<byte> nchunk = _voxelRunner._chunks[chunkIndex].GetChunkValue();
             for (byte x = 0; x < _chunkSize; ++x)
             {
                 for (byte z = 0; z < _chunkSize; ++z)
                 {
-                    //System.Numerics.Vector2 ps = (new System.Numerics.Vector2(x* 1, z* 1) + new System.Numerics.Vector2(chunkPosition.x, chunkPosition.y)*2)*.1f;
-                    byte y = _voxelRunner._chunks[chunkIndex]._nchunkQuiFonctionne[x + _chunkSize * z];
-                    //float noiseValue = GE_Math.Voronoise(ps, pHeight.x, pHeight.y);
-                    //byte y = (byte)math.clamp((noiseValue * _yMax), 0, _yMax);
-                    
+                    byte y = (byte)(_voxelRunner._chunks[chunkIndex].GetNChunkValueAtCoordinate(x, z));
+                    //Debug.Log(y);
                     Vector3 cubePosition = new Vector3(
                         chunkPosition.x + x - (_chunkSize * 0.5f) + 0.5f,
-                        y+ 0.5f,
+                        y+ 1.1f,
                         chunkPosition.z + z - (_chunkSize * 0.5f) + 0.5f
                     );
 
@@ -258,6 +258,9 @@ public class PlayerCameraComponent : MonoBehaviour
                     if (isCubeIntersecting)
                     {
 
+                        if (Input.GetMouseButton(0))
+                            _voxelRunner._chunks[chunkIndex].TerraformingLandscape(x, z, 10);
+                            
                         _previewMesh.transform.position = cubePosition;
                         GE_Debug.DrawBox(
                             cubePosition,

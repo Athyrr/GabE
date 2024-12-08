@@ -78,7 +78,7 @@ public partial struct ECS_PersonFactorySystem : ISystem
                 IsWorking = false
             });
 
-            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
+            CommandBuffer.AddComponent(index, entity, new ECS_PositionFragment
             {
                 Position = new float3(0,0,0) 
             });

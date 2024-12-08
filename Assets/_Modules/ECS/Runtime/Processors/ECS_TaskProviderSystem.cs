@@ -14,7 +14,7 @@ public partial struct ECS_TaskProviderSystem : ISystem
     [BurstCompile]
     private partial struct TaskProviderJob : IJobEntity //@todo il en pense quoi David de la boucle dans le job
     {
-        [ReadOnly] public NativeArray<ECS_Frag_Position> ResourcePositions;
+        [ReadOnly] public NativeArray<ECS_PositionFragment> ResourcePositions;
         [ReadOnly] public NativeArray<ECS_ResourceZoneFragment> ResourceTypes;
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
@@ -59,7 +59,7 @@ public partial struct ECS_TaskProviderSystem : ISystem
 
         // Resource zones query
         _resourceQuery = state.GetEntityQuery(
-            ComponentType.ReadOnly<ECS_Frag_Position>(),
+            ComponentType.ReadOnly<ECS_PositionFragment>(),
             ComponentType.ReadOnly<ECS_ResourceZoneFragment>()
         );
     }
@@ -70,7 +70,7 @@ public partial struct ECS_TaskProviderSystem : ISystem
         EntityCommandBuffer commandBuffer = new EntityCommandBuffer(Allocator.TempJob);
         var writter = commandBuffer.AsParallelWriter();
 
-        var resourcePositions = _resourceQuery.ToComponentDataArray<ECS_Frag_Position>(Allocator.TempJob);
+        var resourcePositions = _resourceQuery.ToComponentDataArray<ECS_PositionFragment>(Allocator.TempJob);
         var resourceTypes = _resourceQuery.ToComponentDataArray<ECS_ResourceZoneFragment>(Allocator.TempJob);
 
         var taskProviderjob = new TaskProviderJob

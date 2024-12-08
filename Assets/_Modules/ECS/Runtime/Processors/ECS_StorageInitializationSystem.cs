@@ -13,8 +13,8 @@ public partial struct ECS_StorageInitializationSystem : ISystem
     {
         var entity = state.EntityManager.CreateEntity();
 
-        state.EntityManager.AddComponent<ECS_Frag_Position>(entity);
-        state.EntityManager.SetComponentData<ECS_Frag_Position>(entity, new ECS_Frag_Position() { Position = new float3(0,0,z: 15) });
+        state.EntityManager.AddComponent<ECS_PositionFragment>(entity);
+        state.EntityManager.SetComponentData<ECS_PositionFragment>(entity, new ECS_PositionFragment() { Position = new float3(0,0,z: 15) });
 
        DynamicBuffer<ECS_ResourceStorageFragment> buffer = state.EntityManager.AddBuffer<ECS_ResourceStorageFragment>(entity);
         //@todo set initial resources in asset to read

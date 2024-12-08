@@ -32,7 +32,7 @@ public partial struct ECS_Processor_Movement : ISystem
 
     public readonly partial struct MoverAspect : IAspect
     {
-        public readonly RefRW<ECS_Frag_Position> Position;
+        public readonly RefRW<ECS_PositionFragment> Position;
         public readonly RefRO<ECS_Frag_Velocity> Velocity;
     }
 

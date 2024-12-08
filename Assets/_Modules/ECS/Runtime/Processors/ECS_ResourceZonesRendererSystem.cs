@@ -52,7 +52,7 @@ public partial class ECS_ResourceZonesRendererSystem : SystemBase
         var woodMatrices = new List<Matrix4x4>();
         var stoneMatrices = new List<Matrix4x4>();
 
-        foreach (var (position, resource) in SystemAPI.Query<RefRO<ECS_Frag_Position>, RefRO<ECS_ResourceZoneFragment>>())
+        foreach (var (position, resource) in SystemAPI.Query<RefRO<ECS_PositionFragment>, RefRO<ECS_ResourceZoneFragment>>())
         {
             var matrix = Matrix4x4.Translate(position.ValueRO.Position);
             switch (resource.ValueRO.Type)

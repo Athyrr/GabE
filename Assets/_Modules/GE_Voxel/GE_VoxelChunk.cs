@@ -24,8 +24,20 @@ using Vector2 = System.Numerics.Vector2;
         
         private Vector3 _chunkPosition;
         public NativeArray<byte> _nchunk;
-        public byte[] _nchunkQuiFonctionne;
-        
+
+        public byte GetNChunkValueAtCoordinate(byte x, byte z)
+        {
+            byte y = _nchunk[x + _chunkSize * z];
+            return y;
+        }
+
+        public void TerraformingLandscape(byte x, byte z, byte brushSize)
+        {
+            byte y = _nchunk[x + _chunkSize * z];
+            _nchunk[x + _chunkSize * z] = (byte)math.clamp(y + 1, 0, _yMax);
+            LoadMesh();
+        }
+
         public GE_VoxelChunk(GameObject GO, Vector3 chunkPosition, byte chunkSize, float cubeSize, byte yMax, Material material, GameObject foliageMesh)
         {
             _gameObject = GO;
@@ -33,7 +45,7 @@ using Vector2 = System.Numerics.Vector2;
             _chunkSize = (byte)(chunkSize / _cubeSize);
             _initChunkSize = (byte)(chunkSize / _cubeSize);
             _yMax = yMax;
-            _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.TempJob);
+            _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.Persistent);
             _chunkPosition = chunkPosition;
             _Material = material;
             _foliageMesh = foliageMesh;
@@ -129,23 +141,23 @@ using Vector2 = System.Numerics.Vector2;
                 for (byte j = 0; j < _chunkSize; ++j)
                 {
                     byte nValue = _nchunk[i + _chunkSize * j];
+                    //Debug.Log(nValue);
+
+                    if (nValue == _yMax)
+                    {
+                        SpawnOnBlock(new Vector3(i, nValue +1, j) + _chunkPosition,
+                            _foliageMesh);
+                    }
                     for (byte k = 0; k < nValue; ++k)
                     {
+                    
                         Mesh cubeMesh = RenderCube(Vector3.zero, GetNeighborsWithChunks(i, j, k, nValue));
                         instances[index].mesh = cubeMesh;
                         instances[index].transform = Matrix4x4.Translate(new Vector3(i - _chunkSize / 2, nValue-k,j - _chunkSize / 2));
                         
-                        cubeMesh.RecalculateNormals();
+                        //cubeMesh.RecalculateNormals();
                         cubeMesh.RecalculateBounds();
 
-
-                        if (k == nValue-1)
-                        {
-                            SpawnOnBlock(new Vector3(i * _cubeSize, nValue - k+2, j * _cubeSize) + _chunkPosition,
-                                _foliageMesh);
-                        }
-                        
-                        
                         ++index;
                     }
                 }
@@ -167,13 +179,6 @@ using Vector2 = System.Numerics.Vector2;
                 nchunk = _nchunk,
             };
             job.Schedule().Complete();
-
-            _nchunkQuiFonctionne = new byte[_nchunk.Length];
-            
-            for (int i = 0; i < _nchunk.Length; i++)
-            {   
-                _nchunkQuiFonctionne[i] = _nchunk[i];
-            }
             
             LoadMesh();
             _gameObject.transform.position = _chunkPosition;
@@ -248,7 +253,7 @@ using Vector2 = System.Numerics.Vector2;
             mesh.triangles = triangles;
 
             //mesh.RecalculateNormals();
-            //mesh.RecalculateBounds();
+            mesh.RecalculateBounds();
 
             return mesh;
         }
@@ -261,26 +266,7 @@ using Vector2 = System.Numerics.Vector2;
         
         public void UpdateLOD(float cubeSize)
         {
-            // step 1: clear all cube in this chunk
-            /*for (byte i = 0; i < _chunkSize; ++i)
-            {
-                for (byte j = 0; j < _chunkSize; ++j)
-                {
-                    _nchunk[i + _chunkSize*j] = 0;
-                }
-            }*/
-            
-            // step 2: replace allocated memory
-            _cubeSize = cubeSize;
-            _chunkSize = (byte)(_initChunkSize / _cubeSize);
-            
-            _nchunk = new NativeArray<byte>(_chunkSize * _chunkSize, Allocator.TempJob);
-            
-            // step 3: recalculate noise
-            //LoadNoise();
-            
-            // step 4: redraw all cube
-            //LoadMesh();
+            // TODO : Add Chunk for visualization
         }
 
     }
