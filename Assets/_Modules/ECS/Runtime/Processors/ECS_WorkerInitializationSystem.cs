@@ -108,6 +108,7 @@ public partial struct ECS_WorkerInitializationSystem : ISystem
             CommandBuffer.AddComponent(index, entity, new ECS_WorkerFragment
             {
                 Work = workType,
+                HoldingCapacity= 1,
                 IsWorking = false
             });
 

@@ -22,7 +22,7 @@ public partial struct ECS_Processor_PersonDestroyer : ISystem
         public void Execute([EntityIndexInQuery] int entityInQueryIndex, Entity entity, in ECS_PersonFragment person)
         {
             // Check age condition
-            if (person.Age > 90)
+            if (person.Age > 1000) //@todo set age to die
             {
                 CommandBuffer.DestroyEntity(entityInQueryIndex, entity);
             }

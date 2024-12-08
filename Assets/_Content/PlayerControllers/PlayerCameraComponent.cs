@@ -9,51 +9,66 @@ using float3 = Unity.Mathematics.float3;
 /// </summary>
 public class PlayerCameraComponent : MonoBehaviour
 {
+    [Header("Init")]
+
+    [SerializeField]
+    private Vector3 _initialPosition = new Vector3(0, 50, -50);
+
     [Header("Target Settings")]
+
     [SerializeField]
     [Tooltip("The target transform to orbit around. If null, uses targetPoint.")]
     private Transform _target;
 
     [SerializeField]
-    [Tooltip("The target point to orbit around if target is null.")]
-    private Vector3 _targetPoint = Vector3.zero;
+    [Tooltip("The target point to orbit around.")]
+    private Vector3 _targetPointOffset = Vector3.zero;
 
     [Header("Distance Settings")]
-    [SerializeField]
-    [Tooltip("The initial distance from the target.")]
-    private float _initialDistance = 10f;
 
     [SerializeField]
     [Tooltip("The minimum distance from the target.")]
     [Min(0)]
-    private float _minDistance = 2f;
+    private float _maxZoom = 10f;
 
     [SerializeField]
     [Tooltip("The maximum distance from the target.")]
     [Min(0)]
-    private float _maxDistance = 20f;
+    private float minZoom = 150;
+
+    [SerializeField]
+    [Min(0)]
+    private float maxZoomAngle = 30;
+
+    [SerializeField]
+    [Min(0)]
+    private float minZoomAngle = 70;
+
 
     [Header("Speed Settings")]
     [SerializeField]
-    [Min(0)]
-    [Tooltip("The speed at which the camera zooms in and out.")]
-    private float _scrollSpeed = 5f;
+    [Range(0, 10)]
+    private float sensitivityX = 2.0f;
+
+    [SerializeField]
+    [Range(0, 10)]
+    private float sensitivityY = 2.0f;
 
     [SerializeField]
     [Min(0)]
-    [Tooltip("The speed at which the camera orbits horizontally (right-click).")]
-    private float _orbitSpeed = 5;
+    [Tooltip("The speed at which the camera zooms in and out.")]
+    private float _scrollSpeed = 800f;
+
+    [SerializeField]
+    [Min(0)]
+    private float _rotationSpeed = 50f;
+
 
     [SerializeField]
     [Range(0, 1)]
     [Tooltip("The smoothing time for camera movements.")]
     private float _smoothTime = 0.2f;
 
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("The step at which the camera moves with WASD.")]
-    private float _stepAngle = 1f;
-    
     [SerializeField]
     [Min(0)]
     [Tooltip("The speed at which the camera moves with WASD.")]
@@ -68,10 +83,10 @@ public class PlayerCameraComponent : MonoBehaviour
     private Material _previewMeshMaterial;
 
     [SerializeField]
-    [Tooltip("Prefab to debug when we click")]
+    [Tooltip("The voxel runner component.")]
     private GE_VoxelRunner _voxelRunner;
 
-    private float _targetDistance;
+    private Vector3 _targetPoint = Vector3.zero;
     private float _currentVerticalAngle = 30f;
     private float _targetVerticalAngle;
     private float _currentHorizontalAngle = 0f;
@@ -80,23 +95,30 @@ public class PlayerCameraComponent : MonoBehaviour
     private byte _chunkLoop;
     private byte _chunkSize;
     private byte _yMax;
-    
+
+
+    /// <summary>
+    /// Initializes the camera's position, target, and preview mesh.
+    /// </summary>
     void Start()
     {
-        _currentTargetPosition = _target != null ? _target.position : _targetPoint;
-        _targetDistance = _initialDistance;
-        _targetVerticalAngle = _currentVerticalAngle;
-        _targetHorizontalAngle = _currentHorizontalAngle;
+        // Initialisation de la position et du point cible
+        _currentTargetPosition = _initialPosition; // Position initiale �lev�e
+        transform.position = _initialPosition;
+
+        _scrollSpeed = 800;
+
+
 
         /*
          * Init value
          */
-        if (!_voxelRunner) throw new Exception("any voxelRunner sending");
-        
+        if (!_voxelRunner) throw new Exception("VoxelRunner not assigned.");
+
         _chunkLoop = _voxelRunner.chunkLoop;
         _chunkSize = _voxelRunner.chunkSize;
         _yMax = _voxelRunner.yMax;
-        
+
         /*
          * Setup cursor preview location
          */
@@ -110,89 +132,113 @@ public class PlayerCameraComponent : MonoBehaviour
             Debug.LogError("Renderer not found on the instantiated object!");
     }
 
+
+
+
+    /// <summary>
+    /// Updates the camera's position and rotation based on user input.
+    /// </summary>
     void LateUpdate()
     {
-        // Update the current target position
-        if (_target != null)
+        if (Input.GetMouseButton(1))
         {
-            _currentTargetPosition = _target.position;
+            float translationX = Input.GetAxis("Mouse X") * sensitivityX;
+            float translationY = Input.GetAxis("Mouse Y") * sensitivityY;
+
+            Vector3 right = transform.right;
+            Vector3 fwd = transform.forward;
+            fwd.y = 0;
+
+            _currentTargetPosition += -right * translationX;
+            _currentTargetPosition += -fwd * translationY;
+
         }
 
-        // Handle zooming with the mouse scroll wheel
+        transform.position = new Vector3(_currentTargetPosition.x, _currentTargetPosition.y, _initialPosition.z);
+
+
+
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0f)
         {
-            _targetVerticalAngle += scroll * _scrollSpeed * 10f;
-            _targetVerticalAngle = Mathf.Clamp(_targetVerticalAngle, 5f, 85f);
+            Vector3 zoomDirection = transform.forward.normalized;
 
-            _targetDistance -= scroll * _scrollSpeed;
-            _targetDistance = Mathf.Clamp(_targetDistance, _minDistance, _maxDistance);
+            _currentTargetPosition += zoomDirection * scroll * _scrollSpeed * Time.deltaTime;
+
+            if (_currentTargetPosition.y < _maxZoom)
+                _currentTargetPosition.y = _maxZoom;
+
+
+            if (_currentTargetPosition.y > minZoom)
+                _currentTargetPosition.y = minZoom;
+
+
+            float angleToStraighten = Mathf.InverseLerp(_maxZoom, minZoom, _currentTargetPosition.y);
+            float rotationAngle = Mathf.Lerp(maxZoomAngle, minZoomAngle, angleToStraighten);
+
+            transform.rotation = Quaternion.Euler(rotationAngle, transform.eulerAngles.y, transform.eulerAngles.z);
         }
 
-        // Horizontal rotation with right-click
-        if (Input.GetMouseButton(1))
-        {
-            float horizontalInput = Input.GetAxis("Mouse X");
-            _targetHorizontalAngle += horizontalInput * _orbitSpeed * -10 * Time.deltaTime;
-
-            float verticalInput = Input.GetAxis("Mouse Y");
-            _targetVerticalAngle += verticalInput * _orbitSpeed * -10 * Time.deltaTime;
-        }
-
-
-        // WASD controls for target movement
+        // ZQSD
         Vector3 movement = Vector3.zero;
-        if (Input.GetKey(KeyCode.W)) movement += transform.forward;  // Forward
-        if (Input.GetKey(KeyCode.S)) movement -= transform.forward;  // Backward
-        if (Input.GetKey(KeyCode.A)) movement -= transform.right;    // Left
-        if (Input.GetKey(KeyCode.D)) movement += transform.right;    // Right
 
-        if (Input.GetKey(KeyCode.Q)) _targetHorizontalAngle -= _stepAngle; // Rotate camera left
-        if (Input.GetKey(KeyCode.E)) _targetHorizontalAngle += _stepAngle; // Rotate camera right
+        if (Input.GetKey(KeyCode.S))
+        {
+            movement -= transform.forward;
+            movement.y = 0;
+        }
+
+        if (Input.GetKey(KeyCode.W))
+        {
+            movement += transform.forward;
+            movement.y = 0;
+        }
+
+        if (Input.GetKey(KeyCode.A)) movement -= transform.right;
+        if (Input.GetKey(KeyCode.D)) movement += transform.right;
+
+        // Rotation
+        if (Input.GetKey(KeyCode.Q)) transform.Rotate(Vector3.up, -_rotationSpeed * Time.deltaTime, Space.World);
+        if (Input.GetKey(KeyCode.E)) transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
 
 
-        // Move with WASD
         if (movement != Vector3.zero)
         {
             movement.Normalize();
             _currentTargetPosition += movement * _WASDSpeed * Time.deltaTime;
+
+            _targetPoint = transform.position + transform.forward + _targetPointOffset;
+            _targetPoint.y = Mathf.Max(_targetPoint.y, 0);
         }
+        transform.position = Vector3.Lerp(transform.position, _currentTargetPosition, _smoothTime);
 
-        // Clamp angle
-        _targetVerticalAngle = Mathf.Clamp(_targetVerticalAngle, 5f, 85f);
 
-        // Calculate the target position in spherical coordinates
-        float verticalAngle = Mathf.Deg2Rad * _targetVerticalAngle;
-        float horizontalAngle = Mathf.Deg2Rad * _targetHorizontalAngle;
 
-        Vector3 targetPosition = _currentTargetPosition + new Vector3(
-            Mathf.Sin(verticalAngle) * Mathf.Cos(horizontalAngle),   // x
-            Mathf.Cos(verticalAngle),                               // y
-            Mathf.Sin(verticalAngle) * Mathf.Sin(horizontalAngle)  // z
-        ) * _targetDistance;
 
-        transform.position = Vector3.Lerp(transform.position, targetPosition, _smoothTime);
 
-        Quaternion targetRotation = Quaternion.LookRotation(_currentTargetPosition - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, _smoothTime);
-        
+
+        // Cast a ray from the camera to the mouse position
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        
+
+        // Debug draw the ray
         Vector3 p = ray.GetPoint(145f);
         Debug.DrawLine(
-                transform.position,
-                p,
-                Color.red,
-                0.5f
-            );
+            transform.position,
+            p,
+            Color.red,
+            0.5f
+        );
+
 
         var vc = _voxelRunner._chunks;
         byte[] _allChunksIndexActivable;
         byte _allChunksIndexLength = 0;
         _allChunksIndexActivable = new byte[vc.Length];
-        
+
+        // Iterate through all chunks
         for (byte i = 0; i < _voxelRunner._chunks.Length; ++i)
         {
+            // Calculate chunk position
             int x = i % _chunkLoop;
             int y = i / _chunkLoop;
             Vector3 chunkPosition = new Vector3(
@@ -201,8 +247,10 @@ public class PlayerCameraComponent : MonoBehaviour
                 (_chunkSize * y - _chunkLoop * _chunkSize / 2 + _chunkSize / 2)
             );
 
+            // Debug draw chunk positions
             Debug.DrawLine(chunkPosition, new Vector3(chunkPosition.x, chunkPosition.y + 100, chunkPosition.z), Color.magenta, 1f);
 
+            // Check if ray intersects chunk's bounding box
             bool isIntersecting = GE_Math.IsRayIntersectingAABB(
                 new float3(transform.position.x, transform.position.y, transform.position.z),
                 new float3(ray.direction.x, ray.direction.y, ray.direction.z),
@@ -218,7 +266,8 @@ public class PlayerCameraComponent : MonoBehaviour
                     new Vector3(_chunkSize, _yMax, _chunkSize),
                     Color.black
                 );
-            } else 
+            }
+            else
                 _allChunksIndexActivable[_allChunksIndexLength++] = i;
         }
 
@@ -254,7 +303,7 @@ public class PlayerCameraComponent : MonoBehaviour
                         new float3(cubePosition.x, cubePosition.y, cubePosition.z),
                         new float3(1, 1, 1)
                     );
-                    
+
                     if (isCubeIntersecting)
                     {
 
@@ -289,7 +338,7 @@ public class PlayerCameraComponent : MonoBehaviour
                             Quaternion.identity,
                             new Vector3(1, 1, 1),
                             Color.grey
-                        );                        
+                        );
                     }
                 }
             }
@@ -313,10 +362,10 @@ public class PlayerCameraComponent : MonoBehaviour
         _target = newTarget;
         if (_target == null)
         {
-            _targetPoint = transform.position + transform.forward * _initialDistance;
+            _targetPoint = transform.position + transform.forward;
         }
     }
-    
+
     // Function to check if a ray intersects an AABB
     private bool RayIntersectsBox(Ray ray, Bounds bounds)
     {
