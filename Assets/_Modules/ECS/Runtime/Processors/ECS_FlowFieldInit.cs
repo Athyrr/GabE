@@ -16,7 +16,7 @@ public partial struct ECS_FlowFieldInit : ISystem
     {
         NativeArray<Entity> entities = new NativeArray<Entity>();
         int i = 0;
-        foreach (var (request, entity) in SystemAPI.Query<RefRO<ECS_BuildListenerFragment>>().WithEntityAccess())
+        foreach (var (request, entity) in SystemAPI.Query<RefRO<ECS_CreateBuildingTag>>().WithEntityAccess())
         {
             entities[i] = entity;
             i++;
