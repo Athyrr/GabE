@@ -14,7 +14,7 @@ public partial class ECS_LODSystem : SystemBase
 
         if (mainCamera == null)
         {
-            Debug.Log("Camera not found in system");
+            Debug.LogWarning("Camera not found in system");
         }
         else
             Debug.Log("Camera  found in system");

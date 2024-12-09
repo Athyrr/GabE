@@ -39,10 +39,10 @@ public partial struct ECS_TaskProgressSystem : ISystem
         }
     }
 
-    private void OnCreate(ref SystemState state)
-    {
-        SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
-    }
+    //private void OnCreate(ref SystemState state)
+    //{
+    //    SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
+    //}
 
     [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
     public void OnUpdate(ref SystemState state)

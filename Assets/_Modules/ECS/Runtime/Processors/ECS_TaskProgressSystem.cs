@@ -1,104 +1,98 @@
+using GabE.Module.ECS;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Collections;
 
-using GabE.Module.ECS;
+
 
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
-    public partial struct ECS_TaskProgressionSystem : ISystem
+public partial struct ECS_TaskProgressionSystem : ISystem
+{
+
+    [BurstCompile(FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
+    private partial struct TaskCheckProgressJob : IJobEntity
     {
-        private DynamicBuffer<ECS_ResourceStorageFragment> _storage;
+        public float DeltaTime;
+        public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
+        private float progression;
 
-        [BurstCompile(FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
-        private partial struct TaskCheckProgressJob : IJobEntity
+        public void Execute(Entity entity, [EntityIndexInQuery] int index, ref ECS_WorkerFragment worker,
+                            in ECS_PositionFragment position, in ECS_Frag_TargetPosition target)
         {
-            public float DeltaTime;
-            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            if (worker.HoldResourcesAmount >= worker.HoldingCapacity)
+                return;
 
-            private float progression;
+            if (math.distance(position.Position, target.Position) > 0.2f) //@todo set resources zones range for work
+                return;
 
-            public void Execute(Entity entity, [EntityIndexInQuery] int index, ref ECS_WorkerFragment worker,
-                                in ECS_PositionFragment position, in ECS_Frag_TargetPosition target)
+            if (!worker.IsWorking)
             {
-                if (worker.HoldResourcesAmount >= worker.HoldingCapacity)
-                    return;
-
-                if (math.distance(position.Position, target.Position) > 0.2f) //@todo set resources zones range for work
-                    return;
-
-                if (!worker.IsWorking)
+                CommandBuffer.AddComponent<ECS_TaskProcessFragment>(index, entity);
+                CommandBuffer.SetComponent<ECS_TaskProcessFragment>(index, entity, new ECS_TaskProcessFragment
                 {
-                    CommandBuffer.AddComponent<ECS_TaskProcessFragment>(index, entity);
-                    CommandBuffer.SetComponent<ECS_TaskProcessFragment>(index, entity, new ECS_TaskProcessFragment
-                    {
-                        Duration = 3 //@todo Set task duration
-                    });
-                    worker.IsWorking = true;
-                }
+                    Duration = 3 //@todo Set task duration
+                });
+                worker.IsWorking = true;
             }
-        }
-
-        [BurstCompile(FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
-        private partial struct TaskProgressJob : IJobEntity
-        {
-            public EntityCommandBuffer.ParallelWriter CommandBuffer;
-            public float DeltaTime;
-
-            public void Execute(Entity entity, [EntityIndexInQuery] int index, ref ECS_TaskProcessFragment process, ref ECS_WorkerFragment worker)
-            {
-                process.Progression += DeltaTime;
-                if (process.Progression >= process.Duration)
-                {
-                    worker.IsWorking = false;
-                    worker.HoldResourcesAmount = worker.HoldingCapacity;
-
-                    CommandBuffer.RemoveComponent<ECS_TaskProcessFragment>(index, entity);
-                }
-            }
-        }
-
-        private void OnCreate(ref SystemState state)
-        {
-            SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
-        }
-
-        [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
-        public void OnUpdate(ref SystemState state)
-        {
-            float deltaTime = SystemAPI.Time.DeltaTime;
-
-            EntityCommandBuffer commandBufferProgress = new EntityCommandBuffer(Allocator.TempJob);
-            var progressWriter = commandBufferProgress.AsParallelWriter();
-
-            var taskProgressJob = new TaskProgressJob
-            {
-                DeltaTime = deltaTime,
-                CommandBuffer = progressWriter,
-            };
-
-            state.Dependency = taskProgressJob.ScheduleParallel(state.Dependency);
-            state.Dependency.Complete();
-
-            commandBufferProgress.Playback(state.EntityManager);
-            commandBufferProgress.Dispose();
-
-            EntityCommandBuffer commandBufferCheck = new EntityCommandBuffer(Allocator.TempJob);
-            var checkWriter = commandBufferCheck.AsParallelWriter();
-
-            var taskCheckProgressJob = new TaskCheckProgressJob
-            {
-                DeltaTime = deltaTime,
-                CommandBuffer = checkWriter,
-            };
-
-            state.Dependency = taskCheckProgressJob.ScheduleParallel(state.Dependency);
-            state.Dependency.Complete();
-
-            commandBufferCheck.Playback(state.EntityManager);
-            commandBufferCheck.Dispose();
         }
     }
+
+    [BurstCompile(FloatPrecision = FloatPrecision.Low, OptimizeFor = OptimizeFor.Performance)]
+    private partial struct TaskProgressJob : IJobEntity
+    {
+        public EntityCommandBuffer.ParallelWriter CommandBuffer;
+        public float DeltaTime;
+
+        public void Execute(Entity entity, [EntityIndexInQuery] int index, ref ECS_TaskProcessFragment process, ref ECS_WorkerFragment worker)
+        {
+            process.Progression += DeltaTime;
+            if (process.Progression >= process.Duration)
+            {
+                worker.IsWorking = false;
+                worker.HoldResourcesAmount = worker.HoldingCapacity;
+
+                CommandBuffer.RemoveComponent<ECS_TaskProcessFragment>(index, entity);
+            }
+        }
+    }
+
+    [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
+    public void OnUpdate(ref SystemState state)
+    {
+        float deltaTime = SystemAPI.Time.DeltaTime;
+
+        EntityCommandBuffer commandBufferProgress = new EntityCommandBuffer(Allocator.TempJob);
+        var progressWriter = commandBufferProgress.AsParallelWriter();
+
+        var taskProgressJob = new TaskProgressJob
+        {
+            DeltaTime = deltaTime,
+            CommandBuffer = progressWriter,
+        };
+
+        state.Dependency = taskProgressJob.ScheduleParallel(state.Dependency);
+        state.Dependency.Complete();
+
+        commandBufferProgress.Playback(state.EntityManager);
+        commandBufferProgress.Dispose();
+
+        EntityCommandBuffer commandBufferCheck = new EntityCommandBuffer(Allocator.TempJob);
+        var checkWriter = commandBufferCheck.AsParallelWriter();
+
+        var taskCheckProgressJob = new TaskCheckProgressJob
+        {
+            DeltaTime = deltaTime,
+            CommandBuffer = checkWriter,
+        };
+
+        state.Dependency = taskCheckProgressJob.ScheduleParallel(state.Dependency);
+        state.Dependency.Complete();
+
+        commandBufferCheck.Playback(state.EntityManager);
+        commandBufferCheck.Dispose();
+    }
+}
 

@@ -1817,18 +1817,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _initialPosition: {x: 0, y: 50, z: -50}
   _target: {fileID: 0}
-  _targetPoint: {x: 0, y: 0, z: 0}
-  _initialDistance: 10
-  _minDistance: 2
-  _maxDistance: 20
+  _targetPointOffset: {x: 0, y: 0, z: 0}
+  _maxZoom: 10
+  minZoom: 150
+  maxZoomAngle: 30
+  minZoomAngle: 70
+  sensitivityX: 2
+  sensitivityY: 2
   _scrollSpeed: 5
-  _orbitSpeed: 5
+  _rotationSpeed: 50
   _smoothTime: 0.2
-  _stepAngle: 1
   _WASDSpeed: 30
-  _previewMesh: {fileID: 919132149155446097, guid: eafc01a4eec5657499facf40c8f6f2dc,
-    type: 3}
-  _previewMeshMaterial: {fileID: 2100000, guid: bba123fc6c1b1fc45b6436280e6007f8,
+  _previewMesh: {fileID: 1840322366}
+  _previewMeshMaterial: {fileID: 2100000, guid: 3ac6cdaa810d73f4199ba749aff46c38,
     type: 2}
   _voxelRunner: {fileID: 569413888}
 --- !u!1 &1715901858
@@ -2453,3 +2454,4 @@ SceneRoots:
   - {fileID: 1167398917}
   - {fileID: 1058749895}
   - {fileID: 679032229}
+  - {fileID: 1545421978}
