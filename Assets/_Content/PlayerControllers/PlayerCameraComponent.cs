@@ -73,11 +73,11 @@ public class PlayerCameraComponent : MonoBehaviour
     [Min(0)]
     [Tooltip("The speed at which the camera moves with WASD.")]
     private float _WASDSpeed = 1f;
-    
+
     [SerializeField]
     [Tooltip("Mesh for preview the over")]
     private GameObject _previewMesh;
-    
+
     [SerializeField]
     [Tooltip("material for _previewMesh")]
     private Material _previewMeshMaterial;
@@ -95,6 +95,10 @@ public class PlayerCameraComponent : MonoBehaviour
     private byte _chunkLoop;
     private byte _chunkSize;
     private byte _yMax;
+
+    private float3 _buildingRequestPosition = float3.zero;  
+
+    public float3 BuildingRequestPosition => _buildingRequestPosition;
 
 
     /// <summary>
@@ -125,7 +129,8 @@ public class PlayerCameraComponent : MonoBehaviour
         Vector3 position = new Vector3(0, 5, 0);
         _previewMesh = Instantiate(_previewMesh, position, Quaternion.identity);
         Renderer renderer = _previewMesh.GetComponent<Renderer>();
-        if (renderer != null) {
+        if (renderer != null)
+        {
             renderer.material = _previewMeshMaterial;
         }
         else
@@ -293,7 +298,7 @@ public class PlayerCameraComponent : MonoBehaviour
                     //Debug.Log(y);
                     Vector3 cubePosition = new Vector3(
                         chunkPosition.x + x - (_chunkSize * 0.5f) + 0.5f,
-                        y+ 1.1f,
+                        y + 1.1f,
                         chunkPosition.z + z - (_chunkSize * 0.5f) + 0.5f
                     );
 
@@ -307,10 +312,12 @@ public class PlayerCameraComponent : MonoBehaviour
                     if (isCubeIntersecting)
                     {
 
-                        if (Input.GetMouseButton(0))
-                            _voxelRunner._chunks[chunkIndex].TerraformingLandscape(x, z, 10);
-                            
+                        //if (Input.GetMouseButton(0)) //@todo enable terraforming 
+                        //    _voxelRunner._chunks[chunkIndex].TerraformingLandscape(x, z, 10);
+
                         _previewMesh.transform.position = cubePosition;
+                        _buildingRequestPosition = _previewMesh.transform.position;
+
                         GE_Debug.DrawBox(
                             cubePosition,
                             Quaternion.identity,

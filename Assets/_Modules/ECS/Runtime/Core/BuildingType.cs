@@ -9,6 +9,7 @@ namespace GabE.Module.ECS
         School,
         Farm,
         Bookshop,
-        Museum
+        Museum,
+        None
     }
 }
