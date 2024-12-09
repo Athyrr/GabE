@@ -611,7 +611,7 @@ GameObject:
   - component: {fileID: 599385229}
   - component: {fileID: 599385228}
   - component: {fileID: 599385227}
-  - component: {fileID: 599385226}
+  - component: {fileID: 599385230}
   m_Layer: 5
   m_Name: Booshop
   m_TagString: Untagged
@@ -639,25 +639,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &599385226
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 599385224}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
-  _createBuildingButton: {fileID: 599385227}
-  _buildingType: 3
-  _position:
-    x: 5
-    y: 5
-    z: 0
 --- !u!114 &599385227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -740,6 +721,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 599385224}
   m_CullTransparentMesh: 1
+--- !u!114 &599385230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 599385224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15750ba2cadefa743a3ad323508c7a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _createBuildingButton: {fileID: 599385227}
+  _buildingManager: {fileID: 1170862533}
+  _buildingType: 3
+  _position:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1 &679032225
 GameObject:
   m_ObjectHideFlags: 0
@@ -925,7 +925,7 @@ GameObject:
   - component: {fileID: 1049863639}
   - component: {fileID: 1049863638}
   - component: {fileID: 1049863637}
-  - component: {fileID: 1049863636}
+  - component: {fileID: 1049863640}
   m_Layer: 5
   m_Name: School
   m_TagString: Untagged
@@ -953,25 +953,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1049863636
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1049863634}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
-  _createBuildingButton: {fileID: 1049863637}
-  _buildingType: 1
-  _position:
-    x: 10
-    y: -5
-    z: 0
 --- !u!114 &1049863637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1054,6 +1035,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1049863634}
   m_CullTransparentMesh: 1
+--- !u!114 &1049863640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1049863634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15750ba2cadefa743a3ad323508c7a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _createBuildingButton: {fileID: 1049863637}
+  _buildingManager: {fileID: 1170862533}
+  _buildingType: 1
+  _position:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1001 &1058749895
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1190,6 +1190,53 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eafc01a4eec5657499facf40c8f6f2dc, type: 3}
+--- !u!1 &1170862532
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1170862534}
+  - component: {fileID: 1170862533}
+  m_Layer: 0
+  m_Name: UiInputsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1170862533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170862532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 1545421980}
+  WantBuild: 0
+  BuildingLoad: 5
+--- !u!4 &1170862534
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170862532}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1251278334
 GameObject:
   m_ObjectHideFlags: 0
@@ -1828,7 +1875,8 @@ MonoBehaviour:
   _rotationSpeed: 50
   _smoothTime: 0.2
   _WASDSpeed: 30
-  _previewMesh: {fileID: 1840322366}
+  _previewMesh: {fileID: 919132149155446097, guid: d1fd5a1b7b1ace240b2d702d7fd84058,
+    type: 3}
   _previewMeshMaterial: {fileID: 2100000, guid: 3ac6cdaa810d73f4199ba749aff46c38,
     type: 2}
   _voxelRunner: {fileID: 569413888}
@@ -1962,7 +2010,7 @@ GameObject:
   - component: {fileID: 1840322371}
   - component: {fileID: 1840322370}
   - component: {fileID: 1840322369}
-  - component: {fileID: 1840322368}
+  - component: {fileID: 1840322372}
   m_Layer: 5
   m_Name: Farm
   m_TagString: Untagged
@@ -1990,25 +2038,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1840322368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1840322366}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
-  _createBuildingButton: {fileID: 1840322369}
-  _buildingType: 2
-  _position:
-    x: 5
-    y: -5
-    z: 0
 --- !u!114 &1840322369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2091,6 +2120,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1840322366}
   m_CullTransparentMesh: 1
+--- !u!114 &1840322372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840322366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15750ba2cadefa743a3ad323508c7a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _createBuildingButton: {fileID: 1840322369}
+  _buildingManager: {fileID: 1170862533}
+  _buildingType: 2
+  _position:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1 &1959026795
 GameObject:
   m_ObjectHideFlags: 0
@@ -2103,7 +2151,7 @@ GameObject:
   - component: {fileID: 1959026800}
   - component: {fileID: 1959026799}
   - component: {fileID: 1959026798}
-  - component: {fileID: 1959026797}
+  - component: {fileID: 1959026801}
   m_Layer: 5
   m_Name: House
   m_TagString: Untagged
@@ -2131,25 +2179,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1959026797
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1959026795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
-  _createBuildingButton: {fileID: 1959026798}
-  _buildingType: 0
-  _position:
-    x: 5
-    y: 0
-    z: 0
 --- !u!114 &1959026798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2232,6 +2261,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1959026795}
   m_CullTransparentMesh: 1
+--- !u!114 &1959026801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959026795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15750ba2cadefa743a3ad323508c7a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _createBuildingButton: {fileID: 1959026798}
+  _buildingManager: {fileID: 1170862533}
+  _buildingType: 0
+  _position:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1 &1991595094
 GameObject:
   m_ObjectHideFlags: 0
@@ -2312,7 +2360,7 @@ GameObject:
   - component: {fileID: 2097733901}
   - component: {fileID: 2097733900}
   - component: {fileID: 2097733899}
-  - component: {fileID: 2097733898}
+  - component: {fileID: 2097733902}
   m_Layer: 5
   m_Name: Museum
   m_TagString: Untagged
@@ -2340,25 +2388,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2097733898
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2097733896}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b00cf855f3ab6245ab75a8b424256d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
-  _createBuildingButton: {fileID: 2097733899}
-  _buildingType: 4
-  _position:
-    x: 10
-    y: 5
-    z: 0
 --- !u!114 &2097733899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2441,6 +2470,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097733896}
   m_CullTransparentMesh: 1
+--- !u!114 &2097733902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097733896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15750ba2cadefa743a3ad323508c7a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _createBuildingButton: {fileID: 2097733899}
+  _buildingManager: {fileID: 1170862533}
+  _buildingType: 4
+  _position:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2455,3 +2503,4 @@ SceneRoots:
   - {fileID: 1058749895}
   - {fileID: 679032229}
   - {fileID: 1545421978}
+  - {fileID: 1170862534}
