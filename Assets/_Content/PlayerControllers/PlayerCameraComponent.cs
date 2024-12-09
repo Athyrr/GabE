@@ -2,7 +2,7 @@ using System;
 using _Modules.GE_Voxel;
 using _Modules.GE_Voxel.Utils;
 using UnityEngine;
-using float3 = Unity.Mathematics.float3;
+using Unity.Mathematics;
 
 /// <summary>
 /// Allows the camera to orbit around a target transform and move using WASD keys.
@@ -44,7 +44,6 @@ public class PlayerCameraComponent : MonoBehaviour
     [Min(0)]
     private float minZoomAngle = 70;
 
-
     [Header("Speed Settings")]
     [SerializeField]
     [Range(0, 10)]
@@ -62,7 +61,6 @@ public class PlayerCameraComponent : MonoBehaviour
     [SerializeField]
     [Min(0)]
     private float _rotationSpeed = 50f;
-
 
     [SerializeField]
     [Range(0, 1)]
@@ -100,7 +98,6 @@ public class PlayerCameraComponent : MonoBehaviour
 
     public float3 BuildingRequestPosition => _buildingRequestPosition;
 
-
     /// <summary>
     /// Initializes the camera's position, target, and preview mesh.
     /// </summary>
@@ -111,9 +108,7 @@ public class PlayerCameraComponent : MonoBehaviour
         transform.position = _initialPosition;
 
         _scrollSpeed = 800;
-
-
-
+        
         /*
          * Init value
          */
@@ -136,10 +131,7 @@ public class PlayerCameraComponent : MonoBehaviour
         else
             Debug.LogError("Renderer not found on the instantiated object!");
     }
-
-
-
-
+    
     /// <summary>
     /// Updates the camera's position and rotation based on user input.
     /// </summary>
@@ -156,13 +148,10 @@ public class PlayerCameraComponent : MonoBehaviour
 
             _currentTargetPosition += -right * translationX;
             _currentTargetPosition += -fwd * translationY;
-
         }
 
         transform.position = new Vector3(_currentTargetPosition.x, _currentTargetPosition.y, _initialPosition.z);
-
-
-
+        
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0f)
         {
@@ -173,10 +162,8 @@ public class PlayerCameraComponent : MonoBehaviour
             if (_currentTargetPosition.y < _maxZoom)
                 _currentTargetPosition.y = _maxZoom;
 
-
             if (_currentTargetPosition.y > minZoom)
                 _currentTargetPosition.y = minZoom;
-
 
             float angleToStraighten = Mathf.InverseLerp(_maxZoom, minZoom, _currentTargetPosition.y);
             float rotationAngle = Mathf.Lerp(maxZoomAngle, minZoomAngle, angleToStraighten);
@@ -206,7 +193,6 @@ public class PlayerCameraComponent : MonoBehaviour
         if (Input.GetKey(KeyCode.Q)) transform.Rotate(Vector3.up, -_rotationSpeed * Time.deltaTime, Space.World);
         if (Input.GetKey(KeyCode.E)) transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
 
-
         if (movement != Vector3.zero)
         {
             movement.Normalize();
@@ -217,23 +203,15 @@ public class PlayerCameraComponent : MonoBehaviour
         }
         transform.position = Vector3.Lerp(transform.position, _currentTargetPosition, _smoothTime);
 
+        MouseAction();
+    }
 
-
-
-
-
-        // Cast a ray from the camera to the mouse position
+    private bool _clickPressed = false;
+    private float _clickPressedTime = 0.0f;
+    private float3 _clickPressedStartPosition;
+    private void MouseAction()
+    {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        // Debug draw the ray
-        Vector3 p = ray.GetPoint(145f);
-        Debug.DrawLine(
-            transform.position,
-            p,
-            Color.red,
-            0.5f
-        );
-
 
         var vc = _voxelRunner._chunks;
         byte[] _allChunksIndexActivable;
@@ -252,9 +230,6 @@ public class PlayerCameraComponent : MonoBehaviour
                 (_chunkSize * y - _chunkLoop * _chunkSize / 2 + _chunkSize / 2)
             );
 
-            // Debug draw chunk positions
-            Debug.DrawLine(chunkPosition, new Vector3(chunkPosition.x, chunkPosition.y + 100, chunkPosition.z), Color.magenta, 1f);
-
             // Check if ray intersects chunk's bounding box
             bool isIntersecting = GE_Math.IsRayIntersectingAABB(
                 new float3(transform.position.x, transform.position.y, transform.position.z),
@@ -263,16 +238,7 @@ public class PlayerCameraComponent : MonoBehaviour
                 new float3(_chunkSize, _yMax, _chunkSize)
             );
 
-            if (!isIntersecting)
-            {
-                GE_Debug.DrawBox(
-                    chunkPosition,
-                    Quaternion.identity,
-                    new Vector3(_chunkSize, _yMax, _chunkSize),
-                    Color.black
-                );
-            }
-            else
+            if (isIntersecting)
                 _allChunksIndexActivable[_allChunksIndexLength++] = i;
         }
 
@@ -284,18 +250,17 @@ public class PlayerCameraComponent : MonoBehaviour
             int chunkX = chunkIndex % _chunkLoop;
             int chunkY = chunkIndex / _chunkLoop;
             Vector3 chunkPosition = new Vector3(
-                (_chunkSize * chunkX - _chunkLoop * _chunkSize / 2 + _chunkSize / 2),
+                (_chunkSize * chunkX - _chunkLoop * _chunkSize * 0.5f + _chunkSize * 0.5f),
                 5f,
-                _chunkSize * chunkY - _chunkLoop * _chunkSize / 2 + _chunkSize / 2
-
+                _chunkSize * chunkY - _chunkLoop * _chunkSize * 0.5f + _chunkSize * 0.5f
             );
-            //NativeArray<byte> nchunk = _voxelRunner._chunks[chunkIndex].GetChunkValue();
+            
             for (byte x = 0; x < _chunkSize; ++x)
             {
                 for (byte z = 0; z < _chunkSize; ++z)
                 {
                     byte y = (byte)(_voxelRunner._chunks[chunkIndex].GetNChunkValueAtCoordinate(x, z));
-                    //Debug.Log(y);
+
                     Vector3 cubePosition = new Vector3(
                         chunkPosition.x + x - (_chunkSize * 0.5f) + 0.5f,
                         y + 1.1f,
@@ -311,53 +276,48 @@ public class PlayerCameraComponent : MonoBehaviour
 
                     if (isCubeIntersecting)
                     {
-
                         //if (Input.GetMouseButton(0)) //@todo enable terraforming 
                         //    _voxelRunner._chunks[chunkIndex].TerraformingLandscape(x, z, 10);
 
-                        _previewMesh.transform.position = cubePosition;
-                        _buildingRequestPosition = _previewMesh.transform.position;
+                        var ct = _previewMesh.transform;
 
-                        GE_Debug.DrawBox(
-                            cubePosition,
-                            Quaternion.identity,
-                            new Vector3(1, 1, 1),
-                            Color.cyan
-                        );
-                        GE_Debug.DrawBox(
-                            transform.position,
-                            Quaternion.identity,
-                            new Vector3(6, 6, 6),
-                            Color.red
-                        );
-                        GE_Debug.DrawBox(
-                            cubePosition,
-                            Quaternion.identity,
-                            new Vector3(6, 6, 6),
-                            Color.red
-                        );
+                        if (Input.GetMouseButton(0) && !_clickPressed)
+                        {
+                            _clickPressed = true;
+                            _clickPressedStartPosition = ct.position;
+                        }
+                        else if (Input.GetMouseButton(0) && _clickPressed)
+                        {
+                            if (_clickPressedTime > 2)
+                            {
+                                float3 gap = _clickPressedStartPosition - (float3)cubePosition;
+                                ct.position = _clickPressedStartPosition - gap * 0.5f;
+                                ct.localScale = new float3(gap.x,gap.y*10,gap.z);
+                            }
+                            _clickPressedTime = _clickPressedTime + 0.1f;
+                        }
+                        else if (!Input.GetMouseButton(0) && _clickPressed)
+                        {
+                            _clickPressed = false;
+                            _clickPressedTime = 0.0f;
+                        }
+                        else
+                        {
+                            ct.localScale = new float3(1);
+                            _previewMesh.transform.position = cubePosition;
+                            
+                            // To send data at ECS
+                            _buildingRequestPosition = _previewMesh.transform.position;
+                        }
+
+                        
+                        
+                        
                         intersectDebugCount++;
-                    }
-                    else
-                    {
-                        GE_Debug.DrawBox(
-                            cubePosition,
-                            Quaternion.identity,
-                            new Vector3(1, 1, 1),
-                            Color.grey
-                        );
                     }
                 }
             }
-
-            GE_Debug.DrawBox(
-                chunkPosition,
-                Quaternion.identity,
-                new Vector3(_chunkSize, _yMax, _chunkSize),
-                Color.green
-            );
         }
-
     }
 
     /// <summary>
@@ -371,46 +331,5 @@ public class PlayerCameraComponent : MonoBehaviour
         {
             _targetPoint = transform.position + transform.forward;
         }
-    }
-
-    // Function to check if a ray intersects an AABB
-    private bool RayIntersectsBox(Ray ray, Bounds bounds)
-    {
-        float tMin = (bounds.min.x - ray.origin.x) / ray.direction.x;
-        float tMax = (bounds.max.x - ray.origin.x) / ray.direction.x;
-
-        if (tMin > tMax) Swap(ref tMin, ref tMax);
-
-        float tyMin = (bounds.min.y - ray.origin.y) / ray.direction.y;
-        float tyMax = (bounds.max.y - ray.origin.y) / ray.direction.y;
-
-        if (tyMin > tyMax) Swap(ref tyMin, ref tyMax);
-
-        if ((tMin > tyMax) || (tyMin > tMax))
-            return false;
-
-        if (tyMin > tMin)
-            tMin = tyMin;
-
-        if (tyMax < tMax)
-            tMax = tyMax;
-
-        float tzMin = (bounds.min.z - ray.origin.z) / ray.direction.z;
-        float tzMax = (bounds.max.z - ray.origin.z) / ray.direction.z;
-
-        if (tzMin > tzMax) Swap(ref tzMin, ref tzMax);
-
-        if ((tMin > tzMax) || (tzMin > tMax))
-            return false;
-
-        return true;
-    }
-
-    // Utility function to swap two values
-    private void Swap(ref float a, ref float b)
-    { // TODO : replace by swap with a,b = b,a
-        float temp = a;
-        a = b;
-        b = temp;
     }
 }

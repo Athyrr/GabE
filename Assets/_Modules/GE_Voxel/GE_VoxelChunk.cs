@@ -10,7 +10,7 @@ using Matrix4x4 = UnityEngine.Matrix4x4;
 using Random = UnityEngine.Random;
 using Vector2 = System.Numerics.Vector2;
 
-    public class GE_VoxelChunk
+    public class GE_VoxelChunk : MonoBehaviour
     {
         private byte _chunkSize = 15;
         private byte _initChunkSize = 15;
@@ -145,8 +145,11 @@ using Vector2 = System.Numerics.Vector2;
 
                     if (nValue == _yMax)
                     {
-                        SpawnOnBlock(new Vector3(i, nValue +1, j) + _chunkPosition,
-                            _foliageMesh);
+                        //Random.InitState(i+j);
+                        //byte randomNumber = (byte)Random.Range(0, 5);
+                        if (i%7 == 0 && j%7 + (byte)Random.Range(0, 5) <= 1)
+                            SpawnOnBlock(new Vector3(i - _chunkSize / 2, nValue +1, j - _chunkSize / 2) + _chunkPosition,
+                                _foliageMesh);
                     }
                     for (byte k = 0; k < nValue; ++k)
                     {
@@ -260,8 +263,8 @@ using Vector2 = System.Numerics.Vector2;
 
         public void SpawnOnBlock(float3 p, GameObject mesh)
         {
-            //GameObject _previewMesh;
-            //_previewMesh = Instantiate(mesh, p, Quaternion.Euler(-90,0,0));
+            GameObject _previewMesh;
+            _previewMesh = Instantiate(mesh, p, Quaternion.Euler(+90,0,0));
         }
         
         public void UpdateLOD(float cubeSize)

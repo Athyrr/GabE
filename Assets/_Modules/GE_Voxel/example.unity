@@ -493,8 +493,9 @@ MonoBehaviour:
   chunkLoop: 10
   material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
     type: 3}
+  _chunks: []
   _playerCamera: {fileID: 1545421977}
-  foliageMesh: {fileID: 919132149155446097, guid: ab3b70ac0db797a4c926ffbdc6ecb3ad,
+  foliageMesh: {fileID: 919132149155446097, guid: 9bf60408c60b6954782f351f67cd4eda,
     type: 3}
   debug: 0
 --- !u!1 &570312613
@@ -1772,7 +1773,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 250
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -1830,10 +1831,10 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 2
+  m_Antialiasing: 1
   m_AntialiasingQuality: 2
-  m_StopNaN: 0
-  m_Dithering: 0
+  m_StopNaN: 1
+  m_Dithering: 1
   m_ClearDepth: 1
   m_AllowXRRendering: 1
   m_AllowHDROutput: 1
@@ -1875,9 +1876,9 @@ MonoBehaviour:
   _rotationSpeed: 50
   _smoothTime: 0.2
   _WASDSpeed: 30
-  _previewMesh: {fileID: 919132149155446097, guid: d1fd5a1b7b1ace240b2d702d7fd84058,
+  _previewMesh: {fileID: 9100469745863861179, guid: 7c73da719d3e2184fb1a4573eb6ad4ed,
     type: 3}
-  _previewMeshMaterial: {fileID: 2100000, guid: 3ac6cdaa810d73f4199ba749aff46c38,
+  _previewMeshMaterial: {fileID: 2100000, guid: bba123fc6c1b1fc45b6436280e6007f8,
     type: 2}
   _voxelRunner: {fileID: 569413888}
 --- !u!1 &1715901858
