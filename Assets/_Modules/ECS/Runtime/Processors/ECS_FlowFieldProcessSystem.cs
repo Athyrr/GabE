@@ -35,19 +35,7 @@ namespace GabE.Module.ECS
                 int flatIndex = FlatIndex(destinationCell.ValueRO.DestinationCellIndex.x, destinationCell.ValueRO.DestinationCellIndex.y);
                 float2 cellPos = cellsData[flatIndex].CellPos;
                 UnityEngine.Debug.DrawLine(new float3(cellPos.x, 0, cellPos.y), new float3(cellPos.x, 100, cellPos.y), Color.magenta, 100f);
-                //int a = 0;
-                //foreach (var cell in cellsData)
-                //{
-                //    if (a < 300)
-                //    {
-                //        UnityEngine.Debug.DrawLine(new float3(cell.CellPos.x, 0, cell.CellPos.y), new float3(cell.CellPos.x, 10, cell.CellPos.y), Color.black, 100f);
-                //        a++;
-                //    }
-                //    else
-                //    {
-                //        UnityEngine.Debug.DrawLine(new float3(cell.CellPos.x, 0, cell.CellPos.y), new float3(cell.CellPos.x, 10, cell.CellPos.y), Color.yellow, 1f);
-                //    }
-                //}
+                
 
                 ECS_CellFragment destinationCellFrag = cellsData[flatIndex];
                 destinationCellFrag.BestCost = 0;
@@ -73,21 +61,11 @@ namespace GabE.Module.ECS
                         int neighbourFlatIndex = FlatIndex(neighbour.x, neighbour.y);
                         ECS_CellFragment neighbourCell = cellsData[neighbourFlatIndex];
 
-                        //UnityEngine.Debug.Log("celllll: " + new float3(cellFrag.CellPos.x, 0, cellFrag.CellPos.y));
-                        //UnityEngine.Debug.Log("neijgigj" + new float3(neighbourCell.CellPos.x, 0, neighbourCell.CellPos.y));
-                        //UnityEngine.Debug.DrawLine(new float3(cellFrag.CellPos.x, 0, cellFrag.CellPos.y), new float3(neighbourCell.CellPos.x, 0, neighbourCell.CellPos.y), Color.cyan, 100f);
-
                         float diagonalCostMultiplier = 1;
                         if (neighbour.x - index.x != 0 && neighbour.y - index.y != 0)
                         {
                             diagonalCostMultiplier = 1.4f;
                         }
-
-                        //if (j <= 100)
-                        //{
-                        //    Debug.Log("cell: " + cellFrag.CellPos);
-                        //    Debug.Log("neighbour: " + neighbourCell.CellPos);
-                        //}
 
 
                         if (neighbourCell.Cost * diagonalCostMultiplier + cellFrag.BestCost < neighbourCell.BestCost)
@@ -96,10 +74,6 @@ namespace GabE.Module.ECS
                             neighbourCell.BestCost = neighbourCell.Cost * diagonalCostMultiplier + cellFrag.BestCost;
                             cellsData[neighbourFlatIndex] = neighbourCell;
                             indices.Enqueue(new int2(neighbour.x, neighbour.y));
-                            //if (j <= 100)
-                            //{
-                            //    Debug.Log(neighbourCell.BestCost);
-                            //}
                         }
                         j++;
                     }

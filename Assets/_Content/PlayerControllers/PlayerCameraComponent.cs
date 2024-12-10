@@ -1,8 +1,13 @@
 using System;
 using _Modules.GE_Voxel;
 using _Modules.GE_Voxel.Utils;
+using GabE.Module.ECS;
+using Unity.Collections;
+using Unity.Entities;
 using UnityEngine;
 using Unity.Mathematics;
+using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// Allows the camera to orbit around a target transform and move using WASD keys.
@@ -207,6 +212,7 @@ public class PlayerCameraComponent : MonoBehaviour
     }
 
     private bool _clickPressed = false;
+    private bool _selectedActif = false;
     private float _clickPressedTime = 0.0f;
     private float3 _clickPressedStartPosition;
     private void MouseAction()
@@ -298,8 +304,16 @@ public class PlayerCameraComponent : MonoBehaviour
                         }
                         else if (!Input.GetMouseButton(0) && _clickPressed)
                         {
+                            if (_clickPressedTime < 2)
+                                sendEntitiesAtLOcation(cubePosition);
+                            else
+                            {
+                                float3 gap = _clickPressedStartPosition - (float3)cubePosition;
+                                GetAllEntities((float3)(_clickPressedStartPosition - gap * 0.5f), new float3(gap.x,10,gap.z));
+                            }
                             _clickPressed = false;
                             _clickPressedTime = 0.0f;
+                            
                         }
                         else
                         {
@@ -309,15 +323,55 @@ public class PlayerCameraComponent : MonoBehaviour
                             // To send data at ECS
                             _buildingRequestPosition = _previewMesh.transform.position;
                         }
-
-                        
-                        
                         
                         intersectDebugCount++;
                     }
                 }
             }
         }
+    }
+    NativeArray<ECS_PositionFragment> tmpListPositions;
+    public void GetAllEntities(float3 boxLocation, float3 boundsSize)
+    {
+        EntityManager EM = World.DefaultGameObjectInjectionWorld.EntityManager;
+        EntityQuery tmp = EM.CreateEntityQuery(ComponentType.ReadWrite<ECS_PositionFragment>());
+        NativeArray<ECS_PositionFragment> v = tmp.ToComponentDataArray<ECS_PositionFragment>(Allocator.Temp);
+
+        tmpListPositions = new NativeArray<ECS_PositionFragment>(v.Length, Allocator.Persistent);
+
+        int count = 0;
+        for (int i = 0; i < v.Length; ++i)
+        {
+            ECS_PositionFragment e = v[i];
+            float3 _p = (float3)e.Position;
+            if (
+                IsPositionInBox(boxLocation, boundsSize, _p)
+            )
+            {
+                tmpListPositions[count] = e;
+                ++count;
+            }
+        }
+    }
+
+    public void sendEntitiesAtLOcation(float3 p)
+    {
+        for (int i = 0; i < tmpListPositions.Length; ++i)
+        {
+            ECS_PositionFragment e = tmpListPositions[i];
+            e.Position = p;
+            Debug.Log(p);
+        }
+    }
+    
+    static bool IsPositionInBox(float3 boxCenter, float3 boxBounds, float3 entityPosition)
+    {
+        float3 boxMin = new float3(boxCenter.x - boxBounds.x, boxCenter.y - boxBounds.y, boxCenter.z - boxBounds.z);
+        float3 boxMax = new float3(boxCenter.x + boxBounds.x, boxCenter.y + boxBounds.y, boxCenter.z + boxBounds.z);
+
+        return entityPosition.x >= boxMin.x && entityPosition.x <= boxMax.x &&
+            entityPosition.y >= boxMin.y && entityPosition.y <= boxMax.y &&
+            entityPosition.z >= boxMin.z && entityPosition.z <= boxMax.z;
     }
 
     /// <summary>

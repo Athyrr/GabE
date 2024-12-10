@@ -42,7 +42,7 @@ public partial struct ECS_FlowFieldInit : ISystem
                 break;
             var reqPos = req1.ValueRO.FlowFieldTargetPos;
 
-            UnityEngine.Debug.Log(req1.ValueRO.HasFinishedInit);
+            //UnityEngine.Debug.Log(req1.ValueRO.HasFinishedInit);
 
 
             NativeList<(Entity, float3)> entities = new NativeList<(Entity, float3)>(Allocator.Temp);
