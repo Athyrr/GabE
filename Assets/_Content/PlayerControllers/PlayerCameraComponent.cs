@@ -121,13 +121,6 @@ public class PlayerCameraComponent : MonoBehaviour
          */
         Vector3 position = new Vector3(0, 5, 0);
         _previewMesh = Instantiate(_previewMesh, position, Quaternion.identity);
-        Renderer renderer = _previewMesh.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            renderer.material = _previewMeshMaterial;
-        }
-        else
-            Debug.LogError("Renderer not found on the instantiated object!");
     }
     
     /// <summary>
@@ -299,7 +292,7 @@ public class PlayerCameraComponent : MonoBehaviour
                             {
                                 float3 gap = _clickPressedStartPosition - (float3)cubePosition;
                                 ct.position = _clickPressedStartPosition - gap * 0.5f;
-                                ct.localScale = new float3(gap.x,gap.y*10,gap.z);
+                                ct.localScale = new float3(gap.x,10,gap.z);
                             }
                             _clickPressedTime = _clickPressedTime + 0.1f;
                         }
