@@ -259,7 +259,7 @@ public class PlayerCameraComponent : MonoBehaviour
             {
                 for (byte z = 0; z < _chunkSize; ++z)
                 {
-                    byte y = (byte)(_voxelRunner._chunks[chunkIndex].GetNChunkValueAtCoordinate(x, z));
+                    byte y = (byte)(_voxelRunner._chunks[chunkIndex]._nchunk[x + _chunkSize * z]);
 
                     Vector3 cubePosition = new Vector3(
                         chunkPosition.x + x - (_chunkSize * 0.5f) + 0.5f,

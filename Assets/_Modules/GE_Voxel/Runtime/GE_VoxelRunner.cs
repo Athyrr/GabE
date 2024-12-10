@@ -1,4 +1,3 @@
-using _Modules.GE_Voxel.Utils;
 using System;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -96,12 +95,6 @@ namespace _Modules.GE_Voxel
                         x + x * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.5f,
                         0f,
                         y + y * chunkSize + chunkSize * 0.5f - chunkLoop * chunkSize * 0.5f);
-                    GE_Debug.DrawBox(
-                        chunkPos,
-                        Quaternion.identity,
-                        new Vector3(chunkSize, yMax, chunkSize),
-                        Color.blue
-                    );
                 }
 #endif
         }

@@ -286,8 +286,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 569413887}
   - {fileID: 1170862534}
+  - {fileID: 624571550}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &541665033
@@ -475,62 +475,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 618856658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &569413886
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 569413887}
-  - component: {fileID: 569413888}
-  m_Layer: 0
-  m_Name: VoxelPlugin
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &569413887
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 569413886}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 212711903}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &569413888
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 569413886}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98ec2dd652fe455ab9670dc2dd76ed52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chunkSize: 30
-  yMax: 8
-  cubeOffset: 0
-  chunkOffset: 0
-  chunkLoop: 10
-  material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
-    type: 3}
-  _chunks: []
-  _playerCamera: {fileID: 1545421977}
-  foliageMesh: {fileID: 919132149155446097, guid: 9bf60408c60b6954782f351f67cd4eda,
-    type: 3}
-  debug: 0
 --- !u!1 &570312613
 GameObject:
   m_ObjectHideFlags: 0
@@ -806,6 +750,61 @@ Transform:
   - {fileID: 562068911}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &624571549
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 624571550}
+  - component: {fileID: 624571551}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &624571550
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624571549}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 212711903}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &624571551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624571549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dec6c54727a6be4199f912cd9b6aecb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chunkSize: 16
+  yMax: 7
+  cubeOffset: 0
+  chunkOffset: 0
+  chunkLoop: 10
+  material: {fileID: -876546973899608171, guid: 0eeeb6d4304ad6047b7b5c42c8f46216,
+    type: 3}
+  _playerCamera: {fileID: 1545421977}
+  foliageMesh: {fileID: 919132149155446097, guid: 9bf60408c60b6954782f351f67cd4eda,
+    type: 3}
+  debug: 0
 --- !u!1 &641440856
 GameObject:
   m_ObjectHideFlags: 0
@@ -2059,7 +2058,7 @@ MonoBehaviour:
     type: 3}
   _previewMeshMaterial: {fileID: 2100000, guid: bba123fc6c1b1fc45b6436280e6007f8,
     type: 2}
-  _voxelRunner: {fileID: 569413888}
+  _voxelRunner: {fileID: 624571551}
 --- !u!1 &1589678409
 GameObject:
   m_ObjectHideFlags: 0

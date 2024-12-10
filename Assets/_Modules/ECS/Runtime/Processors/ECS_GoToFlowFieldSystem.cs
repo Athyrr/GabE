@@ -36,9 +36,9 @@ partial struct ECS_GoToFlowField : ISystem
                 posToGoFrag.Position = tempPos;
                 commandBuffer.SetComponent<ECS_Frag_TargetPosition>(reqEnt, posToGoFrag);
 
-                float3 pos2 = position.ValueRO.Position;
-                float3 cellPos2 = goTo.ValueRO.NodesPos[goTo.ValueRO.Index];
-                UnityEngine.Debug.Log((pos2, cellPos2));
+                //float3 pos2 = position.ValueRO.Position;
+                //float3 cellPos2 = goTo.ValueRO.NodesPos[goTo.ValueRO.Index];
+                //UnityEngine.Debug.Log((pos2, cellPos2));
             }
 
             float3 pos = position.ValueRO.Position;
