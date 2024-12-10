@@ -21,5 +21,8 @@ namespace GabE.Module.ECS
         /// The current number of occupants in the building.
         /// </summary>
         public int Occupants;
+
+
+        public float BuildDuration;
     }
 }

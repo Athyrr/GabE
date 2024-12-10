@@ -6,34 +6,35 @@ using Unity.Entities;
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_BuildingBuilderSystem : ISystem
 {
-
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        //@todo check storage resources before building
-
         var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-        foreach (var (createBuildingTag, entity) in SystemAPI.Query<RefRO<ECS_CreateBuildingTag>>().WithEntityAccess())
+        foreach (var (buildingFragment, entity) in SystemAPI.Query<RefRW<ECS_BuildingFragment>>()
+                                                           .WithAll<ECS_CreateBuildingTag>()
+                                                           .WithEntityAccess())
         {
-            var position = SystemAPI.GetComponentRO<ECS_PositionFragment>(entity).ValueRO;
-            var buildingModel = SystemAPI.GetComponentRO<ECS_BuildingFragment>(entity).ValueRO;
+            buildingFragment.ValueRW.BuildDuration -= SystemAPI.Time.DeltaTime;
 
-            var createdBuilding = ecb.CreateEntity();
-            ecb.AddComponent(createdBuilding, new ECS_BuildingFragment
+            if (buildingFragment.ValueRO.BuildDuration <= 0)
             {
-                Type = buildingModel.Type,
-                Capacicty = buildingModel.Capacicty,
-                Occupants = 0
-            });
-            ecb.AddComponent(createdBuilding, new ECS_PositionFragment
-            {
-                Position = position.Position
-            });
+                var position = SystemAPI.GetComponentRO<ECS_PositionFragment>(entity).ValueRO;
 
-            //UnityEngine.Debug.Log($"Building: {buildingModel.Type.ToString()}  |  position: {position.Position}");
+                var createdBuilding = ecb.CreateEntity();
+                ecb.AddComponent(createdBuilding, new ECS_BuildingFragment
+                {
+                    Type = buildingFragment.ValueRO.Type,
+                    Capacicty = buildingFragment.ValueRO.Capacicty,
+                    Occupants = 0
+                });
+                ecb.AddComponent(createdBuilding, new ECS_PositionFragment
+                {
+                    Position = position.Position
+                });
 
-            ecb.DestroyEntity(entity);
+                ecb.DestroyEntity(entity);
+            }
         }
 
         ecb.Playback(state.EntityManager);

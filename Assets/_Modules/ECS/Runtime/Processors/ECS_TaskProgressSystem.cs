@@ -5,8 +5,6 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 
-
-
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_TaskProgressionSystem : ISystem
 {
@@ -51,8 +49,16 @@ public partial struct ECS_TaskProgressionSystem : ISystem
             process.Progression += DeltaTime;
             if (process.Progression >= process.Duration)
             {
-                worker.IsWorking = false;
-                worker.HoldResourcesAmount = worker.HoldingCapacity;
+                if (process.Task != ECS_TaskProcessFragment.TaskType.Learning)
+                {
+                    worker.IsWorking = false;
+                    worker.HoldResourcesAmount = worker.HoldingCapacity;
+                }
+
+                if (process.Task == ECS_TaskProcessFragment.TaskType.Learning)
+                {
+                    worker.IsWorking = false;
+                }
 
                 CommandBuffer.RemoveComponent<ECS_TaskProcessFragment>(index, entity);
             }
