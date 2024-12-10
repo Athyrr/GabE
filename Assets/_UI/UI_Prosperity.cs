@@ -1,16 +1,12 @@
-using GabE.Module.ECS;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Entities;
 using UnityEngine;
-using UnityEngine.UI;
+
 
 public class UI_Prosperity : MonoBehaviour
 {
-    [SerializeField]
-    Slider _slider = null;
+    //[SerializeField]
+    //Slider _slider = null;
 
-    EntityManager _manager;
+    //EntityManager _manager;
 
     //void Start()
     //{
