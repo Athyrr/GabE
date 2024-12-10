@@ -17,5 +17,7 @@ namespace GabE.Module.ECS
         /// Represents stone resource.
         /// </summary>
         Stone = 2,
+
+        None
     }
 }

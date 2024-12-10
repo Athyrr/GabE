@@ -200,6 +200,21 @@ public partial struct ECS_FlowFieldInit : ISystem
                 UnityEngine.Debug.DrawLine(new float3(chunck.x, 0, chunck.y), new float3(chunck.x, 100, chunck.y), UnityEngine.Color.blue, 100f);
             }
         }
+        //NativeArray<Entity> entities = new NativeArray<Entity>();
+        //int i = 0;
+        //foreach (var (request, entity) in SystemAPI.Query<RefRO<ECS_BuildListenerFragment>>().WithEntityAccess())
+        //{
+        //    entities[i] = entity;
+        //    i++;
+        //}
+
+        //foreach (var request in SystemAPI.Query<RefRO<ECS_FlowFieldRequest>>())
+        //{
+        //    Entity e = state.EntityManager.CreateEntity();
+        //    var reqPos = request.ValueRO.FlowFieldTargetPos;
+        //    DynamicBuffer<ECS_CellData> cellData = state.EntityManager.AddBuffer<ECS_CellData>(e);
+
+        //}
     }
 
 

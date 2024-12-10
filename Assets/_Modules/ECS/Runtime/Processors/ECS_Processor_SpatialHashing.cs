@@ -30,7 +30,7 @@
 //             
 //             EntityManager entityManager = state.EntityManager;
 //
-//             foreach (var (positionRequest,entity) in SystemAPI.Query<RefRW<ECS_Frag_Position>>().WithEntityAccess())
+//             foreach (var (positionRequest,entity) in SystemAPI.Query<RefRW<ECS_PositionFragment>>().WithEntityAccess())
 //             {
 //                 int a = positionRequest.ValueRO.SpatialHashingID;
 //                 DynamicBuffer<ECS_Frag_SpatialHashingData> SHBuffer = entityManager.GetBuffer<ECS_Frag_SpatialHashingData>(entity, false);

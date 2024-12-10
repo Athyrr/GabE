@@ -6,9 +6,12 @@ using Unity.Entities;
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_BuildingBuilderSystem : ISystem
 {
+
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        //@todo check storage resources before building
+
         var ecb = new EntityCommandBuffer(Allocator.Temp);
 
         foreach (var (createBuildingTag, entity) in SystemAPI.Query<RefRO<ECS_CreateBuildingTag>>().WithEntityAccess())
@@ -28,7 +31,7 @@ public partial struct ECS_BuildingBuilderSystem : ISystem
                 Position = position.Position
             });
 
-            UnityEngine.Debug.Log($"Building: {buildingModel.Type}  |  position: {position.Position}");
+            //UnityEngine.Debug.Log($"Building: {buildingModel.Type.ToString()}  |  position: {position.Position}");
 
             ecb.DestroyEntity(entity);
         }

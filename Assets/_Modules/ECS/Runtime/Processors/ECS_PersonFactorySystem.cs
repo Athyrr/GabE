@@ -61,7 +61,7 @@ public partial struct ECS_PersonFactorySystem : ISystem
             var entity = CommandBuffer.CreateEntity(index);
 
             var x = random.NextFloat(-50, 50);
-            var y = random.NextFloat(1, 5);
+            var y = random.NextFloat(2, 5);
             var z = random.NextFloat(-50, 50);
 
             CommandBuffer.AddComponent(index, entity, new ECS_PersonFragment
@@ -78,7 +78,7 @@ public partial struct ECS_PersonFactorySystem : ISystem
                 IsWorking = false
             });
 
-            CommandBuffer.AddComponent(index, entity, new ECS_Frag_Position
+            CommandBuffer.AddComponent(index, entity, new ECS_PositionFragment
             {
                 Position = new float3(0,0,0) 
             });

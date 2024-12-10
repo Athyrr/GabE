@@ -19,7 +19,7 @@ public partial struct ECS_TaskProgressSystem : ISystem
 
         public void Execute(Entity entity, [EntityIndexInQuery] int entityInQueryIndex,
                             ref ECS_TaskProcessFragment task, ref ECS_WorkerFragment worker,
-                            in ECS_Frag_Position position, in ECS_Frag_TargetPosition target)
+                            in ECS_PositionFragment position, in ECS_Frag_TargetPosition target)
         {
             if (!worker.IsWorking || task.HasFinished)
                 return;
@@ -39,10 +39,10 @@ public partial struct ECS_TaskProgressSystem : ISystem
         }
     }
 
-    private void OnCreate(ref SystemState state)
-    {
-        SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
-    }
+    //private void OnCreate(ref SystemState state)
+    //{
+    //    SystemAPI.TryGetSingletonBuffer<ECS_ResourceStorageFragment>(out _storage, true);
+    //}
 
     [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
     public void OnUpdate(ref SystemState state)
