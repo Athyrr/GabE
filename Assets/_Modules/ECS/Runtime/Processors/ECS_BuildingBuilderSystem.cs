@@ -2,35 +2,16 @@ using GabE.Module.ECS;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
-using UnityEngine;
 
 [UpdateInGroup(typeof(ECS_LifecycleSystemGroup))]
 public partial struct ECS_BuildingBuilderSystem : ISystem
 {
-    //[BurstCompile]
-    public void OnCreate(ref SystemState state)
-    {
-        var e = state.EntityManager.CreateEntity(typeof(ECS_PositionFragment), typeof(ECS_BuildingFragment));
-        state.EntityManager.SetComponentData(e, new ECS_PositionFragment
-        {
-            Position = new float3(0f, 0f, 0f)
-        });
-
-        state.EntityManager.SetComponentData(e, new ECS_BuildingFragment
-        {
-            Type = BuildingType.School,
-            Capacicty = 100,
-            Occupants = 0
-        });
-
-        Debug.LogWarning("Create school");
-    }
-
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        //@todo check storage resources before building
+
         var ecb = new EntityCommandBuffer(Allocator.Temp);
 
         foreach (var (createBuildingTag, entity) in SystemAPI.Query<RefRO<ECS_CreateBuildingTag>>().WithEntityAccess())
@@ -50,7 +31,7 @@ public partial struct ECS_BuildingBuilderSystem : ISystem
                 Position = position.Position
             });
 
-            UnityEngine.Debug.Log($"Building: {buildingModel.Type}  |  position: {position.Position}");
+            //UnityEngine.Debug.Log($"Building: {buildingModel.Type.ToString()}  |  position: {position.Position}");
 
             ecb.DestroyEntity(entity);
         }

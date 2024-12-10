@@ -84,18 +84,17 @@ public class PlayerCameraComponent : MonoBehaviour
     [Tooltip("The voxel runner component.")]
     private GE_VoxelRunner _voxelRunner;
 
+    // Camera
     private Vector3 _targetPoint = Vector3.zero;
-    private float _currentVerticalAngle = 30f;
-    private float _targetVerticalAngle;
-    private float _currentHorizontalAngle = 0f;
-    private float _targetHorizontalAngle;
     private Vector3 _currentTargetPosition;
+
+    //Voxel
     private byte _chunkLoop;
     private byte _chunkSize;
     private byte _yMax;
 
-    private float3 _buildingRequestPosition = float3.zero;  
-
+    //Building request
+    private float3 _buildingRequestPosition = float3.zero;
     public float3 BuildingRequestPosition => _buildingRequestPosition;
 
     /// <summary>
@@ -103,8 +102,7 @@ public class PlayerCameraComponent : MonoBehaviour
     /// </summary>
     void Start()
     {
-        // Initialisation de la position et du point cible
-        _currentTargetPosition = _initialPosition; // Position initiale �lev�e
+        _currentTargetPosition = _initialPosition;
         transform.position = _initialPosition;
 
         _scrollSpeed = 800;
@@ -146,8 +144,16 @@ public class PlayerCameraComponent : MonoBehaviour
             Vector3 fwd = transform.forward;
             fwd.y = 0;
 
+
             _currentTargetPosition += -right * translationX;
             _currentTargetPosition += -fwd * translationY;
+
+            //Vector3 scrollMove = _currentTargetPosition += -right;
+            //scrollMove = _currentTargetPosition += -fwd;
+
+            //scrollMove.Normalize();
+
+            //_currentTargetPosition = scrollMove * sensitivityX;
         }
 
         transform.position = new Vector3(_currentTargetPosition.x, _currentTargetPosition.y, _initialPosition.z);
@@ -201,6 +207,7 @@ public class PlayerCameraComponent : MonoBehaviour
             _targetPoint = transform.position + transform.forward + _targetPointOffset;
             _targetPoint.y = Mathf.Max(_targetPoint.y, 0);
         }
+
         transform.position = Vector3.Lerp(transform.position, _currentTargetPosition, _smoothTime);
 
         MouseAction();

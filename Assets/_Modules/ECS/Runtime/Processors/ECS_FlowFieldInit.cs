@@ -14,21 +14,21 @@ public partial struct ECS_FlowFieldInit : ISystem
 
     public void OnUpdate(ref SystemState state)
     {
-        NativeArray<Entity> entities = new NativeArray<Entity>();
-        int i = 0;
-        foreach (var (request, entity) in SystemAPI.Query<RefRO<ECS_CreateBuildingTag>>().WithEntityAccess())
-        {
-            entities[i] = entity;
-            i++;
-        }
+        //NativeArray<Entity> entities = new NativeArray<Entity>();
+        //int i = 0;
+        //foreach (var (request, entity) in SystemAPI.Query<RefRO<ECS_BuildListenerFragment>>().WithEntityAccess())
+        //{
+        //    entities[i] = entity;
+        //    i++;
+        //}
 
-        foreach (var request in SystemAPI.Query<RefRO<ECS_FlowFieldRequest>>())
-        {
-            Entity e = state.EntityManager.CreateEntity();
-            var reqPos = request.ValueRO.FlowFieldTargetPos;
-            DynamicBuffer<ECS_CellData> cellData = state.EntityManager.AddBuffer<ECS_CellData>(e);
+        //foreach (var request in SystemAPI.Query<RefRO<ECS_FlowFieldRequest>>())
+        //{
+        //    Entity e = state.EntityManager.CreateEntity();
+        //    var reqPos = request.ValueRO.FlowFieldTargetPos;
+        //    DynamicBuffer<ECS_CellData> cellData = state.EntityManager.AddBuffer<ECS_CellData>(e);
 
-        }
+        //}
     }
 
 

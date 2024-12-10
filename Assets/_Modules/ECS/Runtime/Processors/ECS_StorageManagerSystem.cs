@@ -1,5 +1,4 @@
 using GabE.Module.ECS;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -28,7 +27,7 @@ public partial struct ECS_StorageManagerSystem : ISystem
         if (!SystemAPI.HasSingleton<ECS_ResourceStorageFragment>())
         {
             var entity = state.EntityManager.CreateEntity();
-            state.EntityManager.AddComponentData(entity, new ECS_PositionFragment { Position = new float3(0, 0, 15) });
+            state.EntityManager.AddComponentData(entity, new ECS_PositionFragment { Position = new float3(-10, 15, 15) });
 
             _globalStorage = new NativeArray<ECS_ResourceStorageFragment>(3, Allocator.Persistent);
             _globalStorage[0] = new ECS_ResourceStorageFragment { Type = ResourceType.Wood, Quantity = 10 };

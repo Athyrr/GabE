@@ -16,7 +16,7 @@ public partial struct ECS_ResourceZoneInitializationSystem : ISystem
                 typeof(ECS_ResourceZoneFragment)
             );
 
-            ECS_PositionFragment position = new ECS_PositionFragment { Position = new float3(i * 10f, 0f, 0f) };
+            ECS_PositionFragment position = new ECS_PositionFragment { Position = new float3(i * 10f, 15f, 0f) };
             state.EntityManager.SetComponentData(entity, position);
 
             ECS_ResourceZoneFragment resource = i switch

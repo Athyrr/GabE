@@ -36,7 +36,7 @@ public class UI_BuildingManager : MonoBehaviour
 
     private void OnCreateBuilding(BuildingType type)
     {
-        Debug.Log("Create building button clicked!");
+        Debug.Log("Build !");
 
         var ecb = _ecbSystem.CreateCommandBuffer();
 
