@@ -91,7 +91,7 @@ public partial struct ECS_LifecycleSystem : ISystem
 
         global.ValueRW.Prosperity = buildingReward + happyCount / 1000 /*personCount + buildingReward*/;
 
-        Debug.Log($"Prosperity: {buildingReward}.");
+//        Debug.Log($"Prosperity: {buildingReward}.");
     }
 
 
